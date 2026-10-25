@@ -14,7 +14,8 @@
 # - ADB on port 5555 is closed (connection refused) until you pair once through Wireless debugging with
 #   the stock adb: Developer options > Wireless debugging > Pair device with pairing code, `adb pair
 #   <ip:pairport> <code>`, `adb connect <ip:connectport>` (`adb mdns services` lists both ports), then
-#   `adb tcpip 5555`. After that tools/tv.py works on 5555 (README, Troubleshooting).
+#   `adb tcpip 5555`. After that tools/tv.py works on 5555
+#   (docs/TROUBLESHOOTING.md, "USB debugging never opens port 5555").
 # - `cmd package set-home-activity com.gathin.tvhome` returns Success but launcherx stays the default.
 #   Disable BOTH com.google.android.apps.tv.launcherx and com.google.android.tungsten.setupwraith
 #   (setupwraith re-enables launcherx), only after the new launcher is installed.
