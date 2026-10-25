@@ -186,6 +186,16 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private TextView stats;
     private List<RaceWeekend.Race> raceCalendar;
     private View racePanel;
+    /** This fork's NAS photo frame in the space above the dock; inert unless set up and switched on. */
+    private NasPhotoFrame photoFrame;
+    private PhotoFrameView photoView;
+    /** This fork's status line under the clock (weather, sleep timer, AirPlay) and its sources. */
+    private View statusLine;
+    private TextView statusWeather, statusSleep, statusAirplay;
+    private Weather weather;
+    private AirPlayStatus airPlay;
+    /** The dock's top when the photo frame was last placed, to place it again when the status line comes or goes. */
+    private float lastDockTop = -1;
     private TextView raceKicker, raceHeadline, raceSessions;
     /** config.xml show_stats, overridable by a theme. Off: the line is gone and nothing is read. */
     private boolean showStats;
@@ -366,6 +376,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (festive) updateWifiLabel();
             sky.update();
             wallpaperPlayer.update();
+            updateSleepStatus();
             handler.postDelayed(this, MINUTE_MS);
         }
     };
@@ -476,6 +487,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         stats = findViewById(R.id.stats);
         raceCalendar = cfg.raceCalendar;
         racePanel = findViewById(R.id.racePanel);
+        photoView = findViewById(R.id.photoFrame);
+        photoFrame = new NasPhotoFrame(this, photoView, animations && !reducedMotion);
+        setUpPhotoFrameFocus();
         raceKicker = findViewById(R.id.raceKicker);
         raceHeadline = findViewById(R.id.raceHeadline);
         raceSessions = findViewById(R.id.raceSessions);
@@ -704,6 +718,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     new Intent(this, LauncherSettingsActivity.class), LAUNCHER_SETTINGS_REQUEST);
             else open(systemIntent(Settings.ACTION_SETTINGS));
         });
+        findViewById(R.id.btnControl).setOnClickListener(v -> open(new Intent(this, ControlCenterActivity.class)));
+        setUpStatusLine();
         btnReorder = findViewById(R.id.btnReorder);
         btnReorder.setOnClickListener(v -> toggleReorder());
         btnReorder.setVisibility(cfg.reorderButton ? View.VISIBLE : View.GONE);
@@ -764,6 +780,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
             if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return true;
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) {
+                if (focusPhotoFrame()) return true;
                 // Back to the dock tile Up came from, not wherever the focus finder lands.
                 focusTile(singleRow ? lastFocused : lastFocused % COLUMNS);
                 return true;
@@ -777,11 +794,13 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         btnInputs.setOnKeyListener(pillKeys);
         btnWifi.setOnKeyListener(pillKeys);
         btnSettings.setOnKeyListener(pillKeys);
+        findViewById(R.id.btnControl).setOnKeyListener(pillKeys);
         btnReorder.setOnKeyListener(pillKeys);
         btnLibraryTop.setOnKeyListener(pillKeys);
         for (View button : topAppButtons) button.setOnKeyListener(pillKeys);
         if (advancedEffects) {
-            List<View> pills = new ArrayList<>(Arrays.asList(btnInputs, btnWifi, btnReorder, btnLibraryTop, btnSettings));
+            List<View> pills = new ArrayList<>(Arrays.asList(btnInputs, btnWifi, btnReorder, btnLibraryTop,
+                    findViewById(R.id.btnControl), btnSettings));
             pills.addAll(topAppButtons);
             for (View button : pills) {
                 button.setOnFocusChangeListener((view, focused) -> view.animate()
@@ -961,6 +980,10 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (showStats) startStats();
         sky.update();
         wallpaperPlayer.start();
+        photoFrame.start();
+        weather.refresh();
+        airPlay.refresh();
+        updateSleepStatus();
         handler.postDelayed(minuteTick, MINUTE_MS);
         if (festive && diya != null) {
             diya.start();
@@ -1130,6 +1153,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         root.removeCallbacks(showIdleClock);
         endReorder();   // Home or another app while reordering keeps the order so far
         wallpaperPlayer.stop();
+        photoFrame.stop();
+        airPlay.stop();
         stopAmbientAnimation();
         hero.animate().cancel();
         ambient.animate().cancel();
@@ -1173,6 +1198,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroArtCache.clear();
         heroArtKey = null;
         wallpaperPlayer.releaseForMemoryPressure();
+        photoFrame.release();
         tileRefresh.invalidate();
     }
 
@@ -1191,6 +1217,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         super.onDestroy();
         unregisterReceiver(packageReceiver);
         wallpaperPlayer.close();
+        photoFrame.close();
         ConnectivityManager cm = getSystemService(ConnectivityManager.class);
         TvInputManager tim = (TvInputManager) getSystemService(TV_INPUT_SERVICE);
         if (tim != null) tim.unregisterCallback(inputCallback);
@@ -1694,6 +1721,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         float y = dockTopInRoot - 14 * density - 26 * density - hero.getHeight();
         boolean changed = !label.contentEquals(heroName.getText());
         if (cinematic && heroArtAlpha > 0f) showHeroArt(position);
+        placePhotoFrame(dockTopInRoot);
 
         if (!animations || reducedMotion) {
             // Snap the shelf instead of sliding and fading it: each of those frames repaints the
@@ -1744,6 +1772,136 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         } else {
             hero.setY(y);
         }
+    }
+
+    /**
+     * The NAS photo frame takes focus between the dock and the top bar while a photo is up: Up and Down move on,
+     * Left and Right stay, OK opens its menu, and the photo holds still while it is focused.
+     */
+    private void setUpPhotoFrameFocus() {
+        photoView.setFocusHint(getString(R.string.nas_photo_hint));
+        photoView.setOnFocusChangeListener((v, has) -> {
+            photoFrame.setPaused(has);
+            if (has) hideGlass();
+        });
+        photoView.setOnKeyListener((v, keyCode, event) -> {
+            if (event.getAction() != KeyEvent.ACTION_DOWN) return false;
+            switch (keyCode) {
+                case KeyEvent.KEYCODE_DPAD_UP:
+                    View top = btnInputs.getVisibility() == View.VISIBLE ? btnInputs : firstTopButton();
+                    top.requestFocus();
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_DOWN:
+                    focusTile(singleRow ? lastFocused : lastFocused % COLUMNS);
+                    return true;
+                case KeyEvent.KEYCODE_DPAD_LEFT:
+                case KeyEvent.KEYCODE_DPAD_RIGHT:
+                    return true;
+                default:
+                    return false;
+            }
+        });
+        photoView.setOnClickListener(v -> showPhotoMenu());
+    }
+
+    /** Focus to the photo frame when it shows a photo; false leaves the key to the caller's own path. */
+    private boolean focusPhotoFrame() {
+        if (!photoFrame.active() || !photoView.isFocusable() || photoView.getAlpha() < 0.5f
+                || photoFrame.currentPath() == null) return false;
+        photoView.requestFocus();
+        photoView.playSoundEffect(SoundEffectConstants.NAVIGATION_UP);
+        return true;
+    }
+
+    /** OK on the photo: hide it for good, hide its folder, or go on to the next one. */
+    private void showPhotoMenu() {
+        String path = photoFrame.currentPath();
+        if (path == null) return;
+        String name = path.substring(path.lastIndexOf('/') + 1);
+        String folder = NasHidden.folderOf(path);
+        List<String> labels = new ArrayList<>();
+        labels.add(getString(R.string.nas_hide_photo));
+        if (!folder.isEmpty()) labels.add(getString(R.string.nas_hide_folder, NasPhotoFrame.caption(path)));
+        labels.add(getString(R.string.nas_next_photo));
+        new android.app.AlertDialog.Builder(this)
+                .setTitle(name)
+                .setItems(labels.toArray(new String[0]), (d, which) -> {
+                    String picked = labels.get(which);
+                    if (picked.equals(getString(R.string.nas_next_photo))) {
+                        photoFrame.skip();
+                        return;
+                    }
+                    boolean wholeFolder = !picked.equals(getString(R.string.nas_hide_photo));
+                    photoFrame.hideCurrent(wholeFolder);
+                    Toast.makeText(this, wholeFolder ? R.string.nas_hidden_folder_done : R.string.nas_hidden_photo_done,
+                            Toast.LENGTH_LONG).show();
+                })
+                .setNegativeButton(android.R.string.cancel, null)
+                .show();
+    }
+
+    /**
+     * The NAS photo frame's box: from just under the clock row to just above the dock, from a little over a third
+     * of the way across (clear of most dock names, which also sit under its widest fade) to the dock's right edge.
+     */
+    private void placePhotoFrame(float dockTopInRoot) {
+        lastDockTop = dockTopInRoot;
+        if (!photoFrame.active()) return;
+        View header = statusLine.getVisibility() == View.VISIBLE ? statusLine : findViewById(R.id.leftBlock);
+        int[] at = new int[2];
+        int[] rootAt = new int[2];
+        header.getLocationInWindow(at);
+        root.getLocationInWindow(rootAt);
+        int top = at[1] - rootAt[1] + header.getHeight() + Math.round(10 * density);
+        int bottom = Math.round(dockTopInRoot - 34 * density);   // clear of the dock band, which rises 14dp over the tiles
+        int width = root.getWidth();
+        if (getResources().getBoolean(R.bool.rtl_menu_bar)) {
+            photoView.setMirrored(true);   // Hebrew: the dock name is on the right, so the photo goes left
+            photoFrame.place(Math.round(66 * density), top, width - Math.round(width * 0.32f), bottom);
+        } else {
+            photoFrame.place(Math.round(width * 0.32f), top, width - Math.round(66 * density), bottom);
+        }
+        photoFrame.setShown(true, animations && !reducedMotion);
+    }
+
+    // ---- status line (this fork) ------------------------------------------------------------------
+
+    private void setUpStatusLine() {
+        statusLine = findViewById(R.id.statusLine);
+        statusWeather = findViewById(R.id.statusWeather);
+        statusSleep = findViewById(R.id.statusSleep);
+        statusAirplay = findViewById(R.id.statusAirplay);
+        weather = new Weather(this, now -> {
+            statusWeather.setText(getString(R.string.wx_now, now.temperature, getString(now.description())));
+            statusWeather.setCompoundDrawablesRelativeWithIntrinsicBounds(now.icon(), 0, 0, 0);
+            showStatus(statusWeather, true);
+        });
+        airPlay = new AirPlayStatus(this, (name, known) -> {
+            if (known) statusAirplay.setText(name != null ? getString(R.string.airplay) + " · " + name
+                    : getString(R.string.airplay) + " · " + getString(R.string.airplay_off));
+            statusAirplay.setAlpha(name != null ? 1f : 0.55f);
+            showStatus(statusAirplay, known);
+        });
+    }
+
+    /** The sleep timer's countdown, once a minute and on every return to Home; gone while the timer is off. */
+    private void updateSleepStatus() {
+        int left = SleepTimer.minutesLeft();
+        if (left > 0) statusSleep.setText(getString(R.string.sleep_status, left));
+        showStatus(statusSleep, left > 0);
+    }
+
+    private void showStatus(TextView part, boolean show) {
+        part.setVisibility(show ? View.VISIBLE : View.GONE);
+        boolean any = statusWeather.getVisibility() == View.VISIBLE || statusSleep.getVisibility() == View.VISIBLE
+                || statusAirplay.getVisibility() == View.VISIBLE;
+        int was = statusLine.getVisibility();
+        statusLine.setVisibility(any ? View.VISIBLE : View.GONE);
+        // The frame starts under the status line: move it once the line has its new size.
+        if (lastDockTop >= 0) statusLine.post(() -> {
+            if (heroShown) placePhotoFrame(lastDockTop);   // not while focus is down in the grid
+        });
+        else if (was != statusLine.getVisibility()) statusLine.requestLayout();
     }
 
     /** The shelf's text for this dock app: its name and, on the cinematic shelf, "Last opened" and the dots. */
@@ -1967,6 +2125,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         heroArt.animate().cancel();
         heroArt.setAlpha(0f);
         heroShown = false;
+        photoFrame.setShown(false, animations && !reducedMotion);
         if (!ambientGlow) return;
         if (!animations || reducedMotion) {
             setAmbient(color);
@@ -1985,6 +2144,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     }
 
     private void hideHero() {
+        photoFrame.setShown(false, animations && !reducedMotion);
         if (!heroShown) return;
         stopAmbientAnimation();
         hero.animate().cancel();
@@ -2208,7 +2368,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (singleRow) {
             // One row: Up leaves for the top bar, Down has nowhere to go, and Left/Right walk the whole row,
             // stopping at its two ends (the default focus search scrolls the row to the next tile).
-            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return false;
+            if (keyCode == KeyEvent.KEYCODE_DPAD_UP) return focusPhotoFrame();
             if (keyCode == KeyEvent.KEYCODE_DPAD_DOWN) return true;
             boolean forward = rtlAppGrid ? keyCode == KeyEvent.KEYCODE_DPAD_LEFT : keyCode == KeyEvent.KEYCODE_DPAD_RIGHT;
             int last = adapter.focusablePosition(count - 1);
@@ -2232,7 +2392,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     rtlAppGrid, keyCode == KeyEvent.KEYCODE_DPAD_LEFT);
         }
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
-            if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
+            if (position < COLUMNS) return focusPhotoFrame();   // dock row: the photo, else the top bar
             target = position - COLUMNS;
         } else {
             int lastRowStart = ((count - 1) / COLUMNS) * COLUMNS;

@@ -30,6 +30,14 @@
         android:layout_height="match_parent"
         android:alpha="0" />
 
+    <!-- NAS photo frame (NasPhotoFrame): photos in the empty space above the dock, placed in code. -->
+    <com.gathin.tvhome.PhotoFrameView
+        android:id="@+id/photoFrame"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:visibility="gone"
+        android:importantForAccessibility="no" />
+
     <!-- Race-weekend panel (a theme's race_calendar, see RaceWeekend): in the free space under the clock,
          shown only from shortly before a weekend's first session until the race is over. Updated once a
          minute with the clock, never animated. -->
@@ -117,7 +125,7 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textColor="#FFFFFFFF"
-            android:textSize="48sp"
+            android:textSize="34sp"
             android:fontFamily="@string/font_light"
             android:letterSpacing="-0.02"
             android:includeFontPadding="false"
@@ -311,6 +319,26 @@
                 android:focusable="false"
                 android:visibility="gone" />
 
+            <!-- This fork: weather, the sleep timer and AirPlay at a glance (StatusLine); each part shows only with
+                 something to say, and the line is gone when none has. -->
+            <LinearLayout
+                android:id="@+id/statusLine"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/leftBlock"
+                android:layout_alignStart="@id/leftBlock"
+                android:layout_marginStart="2dp"
+                android:layout_marginTop="10dp"
+                android:orientation="horizontal"
+                android:gravity="center_vertical"
+                android:focusable="false"
+                android:visibility="gone">
+
+                <TextView android:id="@+id/statusWeather" style="@style/StatusItem" />
+                <TextView android:id="@+id/statusSleep" style="@style/StatusItem" android:drawableStart="@drawable/ic_moon" />
+                <TextView android:id="@+id/statusAirplay" style="@style/StatusItem" android:drawableStart="@drawable/ic_airplay" />
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/topButtons"
                 android:layout_width="wrap_content"
@@ -352,6 +380,14 @@
                     android:visibility="gone"
                     android:contentDescription="@string/app_library"
                     android:drawableStart="@drawable/ic_apps_pill"
+                    android:nextFocusDown="@+id/grid" />
+
+                <!-- This fork: the control centre (ControlCenterActivity). -->
+                <TextView
+                    android:id="@+id/btnControl"
+                    style="@style/TopButtonIcon"
+                    android:contentDescription="@string/control_center"
+                    android:drawableStart="@drawable/ic_control_center"
                     android:nextFocusDown="@+id/grid" />
 
                 <TextView

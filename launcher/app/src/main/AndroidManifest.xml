@@ -8,6 +8,11 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- This fork only: the NAS photo frame (NasPhotoFrame) fetches photos from the NAS share set up with
+         tools/nas-photos.sh, the status line asks Open-Meteo for the weather (Weather, the TV's location rounded to
+         about a kilometre) and looks for AirPlay on the local network (AirPlayStatus). Nothing else. The upstream
+         launcher has no network access by design. -->
+    <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Needed since Android 10 to read the Wi-Fi network name for the network pill. Never requested at
          runtime: build-and-install grants it with pm grant, so lint's Android 12 "ask for COARSE with
@@ -104,6 +109,11 @@
             android:exported="false"
             android:excludeFromRecents="true"
             android:screenOrientation="landscape" />
+        <activity
+            android:name=".NasPhotoSettingsActivity"
+            android:exported="false"
+            android:excludeFromRecents="true"
+            android:screenOrientation="landscape" />
         <!-- The system input switcher (com.android.tv.action.VIEW_INPUTS), which is what the remote's Input
              button becomes through the TV's Live TV app or InputKeyService. Disabled here and switched on by
              MainActivity only while handle_view_inputs is true (config.xml or a theme), for sets whose stock
@@ -126,6 +136,14 @@
              which throws IllegalStateException in onCreate (#1122); a TV is landscape anyway. -->
         <activity
             android:name=".QuickSettingsActivity"
+            android:exported="false"
+            android:taskAffinity=""
+            android:launchMode="singleTop"
+            android:excludeFromRecents="true"
+            android:noHistory="true"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar.Fullscreen" />
+        <activity
+            android:name=".ControlCenterActivity"
             android:exported="false"
             android:taskAffinity=""
             android:launchMode="singleTop"
@@ -224,6 +242,15 @@
                 <action android:name="android.service.notification.NotificationListenerService" />
             </intent-filter>
         </service>
+        <!-- The NAS photo frame's connection, sent over adb by tools/nas-photos.sh (the shell holds this permission). -->
+        <receiver
+            android:name=".SleepTimerConfig"
+            android:exported="true"
+            android:permission="android.permission.WRITE_SECURE_SETTINGS" />
+        <receiver
+            android:name=".NasPhotoConfig"
+            android:exported="true"
+            android:permission="android.permission.WRITE_SECURE_SETTINGS" />
         <receiver
             android:name=".GuardConfig"
             android:exported="true"
