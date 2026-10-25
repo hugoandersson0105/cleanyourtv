@@ -62,7 +62,17 @@ def read_list(path):
     A BOM and CRLF from a Windows editor are dropped, as is a trailing `# note`; anything that is not
     a bare package name stops the run before the TV is touched.
     """
-    text = Path(path).read_text(encoding="utf-8-sig", errors="replace")
+    # A list that cannot be read is the same mistake as a bad name further down it - a typo, or a
+    # folder a git pull moved - and it is answered the same way: one line naming the path, before any
+    # of the plan is printed and so before tools/tv.py --batch has a command to send. Left to
+    # Path.read_text it was a 17-line traceback through pathlib: that is what `tools/restore.sh
+    # <typo>` printed for the undo, while `tools/disable.sh <typo>` already said "cannot read the
+    # list: <path>". OSError covers a missing file, a directory and a path with a file in the middle.
+    try:
+        text = Path(path).read_text(encoding="utf-8-sig", errors="replace")
+    except OSError as e:
+        raise SystemExit(f"could not read {path} ({e.strerror or e}). Nothing was sent to the TV: "
+                         f"pass the debloat list, e.g. examples/<your tv>/debloat.txt")
     names = []
     for number, line in enumerate(text.splitlines(), 1):
         line = line.split("#", 1)[0].strip()
