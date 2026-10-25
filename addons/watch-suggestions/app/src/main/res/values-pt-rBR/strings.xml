@@ -1,0 +1,25 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Sugestões</string>
+    <string name="loading">Carregando sugestões…</string>
+    <string name="watch_sound">Assistir trailer com som</string>
+    <string name="more">Mais</string>
+    <string name="settings">Configurações</string>
+    <string name="hint">▲▼ trocar sugestão     ◀▶ opções     OK escolher</string>
+    <string name="more_hint">▲▼ rolar     OK ou Voltar para fechar</string>
+    <string name="no_data">Sem sugestões agora. Confira a internet e a chave do TMDB em Configurações.</string>
+    <string name="cant_play">Não consegui tocar os trailers agora.</string>
+    <string name="loading_trailer">Carregando trailer…</string>
+    <string name="no_audio">Este trailer não tem áudio</string>
+    <string name="no_dub">Sem trailer no seu idioma: tocando o original</string>
+    <string name="series">Série</string>
+    <string name="movie">Filme</string>
+    <string name="settings_title">Sugestões: suas chaves</string>
+    <string name="settings_intro">Chaves gratuitas, uma por pessoa, para você usar sua própria cota. Crie a chave do TMDB em themoviedb.org/settings/api. O client id do Trakt (trakt.tv/oauth/applications) é opcional e traz o que as pessoas estão assistindo de verdade na semana. Nada é enviado a ninguém além de TMDB, Trakt e YouTube.</string>
+    <string name="tmdb_label">Chave de API do TMDB (obrigatória)</string>
+    <string name="trakt_label">Client id do Trakt (opcional)</string>
+    <string name="hide_asian">Ocultar animes e doramas: %1$s</string>
+    <string name="on">ligado</string>
+    <string name="off">desligado</string>
+    <string name="save">Salvar</string>
+</resources>

@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- 16:9 banner: a film frame with a play triangle and a row of sparkles. Own art. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="320dp" android:height="180dp"
+    android:viewportWidth="320" android:viewportHeight="180">
+    <path android:fillColor="#15171F" android:pathData="M0,0h320v180h-320z" />
+    <path android:strokeColor="#E8556B" android:strokeWidth="7" android:fillColor="#00000000" android:pathData="M88,38h144a8,8 0 0 1 8,8v72a8,8 0 0 1 -8,8h-144a8,8 0 0 1 -8,-8v-72a8,8 0 0 1 8,-8z" />
+    <path android:fillColor="#FFFFFF" android:pathData="M148,64l44,26l-44,26z" />
+    <path android:fillColor="#E8556B" android:pathData="M100,150h20v8h-20zM150,150h20v8h-20zM200,150h20v8h-20z" />
+</vector>
