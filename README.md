@@ -56,7 +56,7 @@ before touching anything you might use.
 | You have | Do this |
 |---|---|
 | **A computer** | Use the prompt with a coding assistant: the three steps below. |
-| **Only an Android phone** | Use the community-built [Clean Your TV app](https://cleanyour.tv/app) by [@udhaykumarbala](https://github.com/udhaykumarbala): connect, analyse, clean, in about five minutes. No laptop, no coding agent. |
+| **Only an Android phone** | Use the community-built [Clean Your TV app](https://cleanyour.tv/app) by [@udhaykumarbala](https://github.com/udhaykumarbala): connect, analyse, clean, in about five minutes. Or [Tellyscope](https://github.com/man15h/tellyscope) ([APK](https://github.com/man15h/tellyscope/releases/latest)) by [@man15h](https://github.com/man15h), which applies this repo's list for your TV and only switches apps off, with undo. No laptop, no coding agent. |
 
 With a computer, you need it on the same Wi-Fi as the TV and a coding assistant with shell access.
 
@@ -798,6 +798,8 @@ three that matter most:
 Yes. [@udhaykumarbala](https://github.com/udhaykumarbala) built a free, open-source [phone app](https://cleanyour.tv/app)
 for Android that does the same cleanup over Wi-Fi: it connects to the TV, shows a plan first, saves a restore
 point, and only switches apps off, so everything can be put back. It's community-built.
+[Tellyscope](https://github.com/man15h/tellyscope) ([APK](https://github.com/man15h/tellyscope/releases/latest)) by [@man15h](https://github.com/man15h) is another free, open-source Android phone app: it picks this repo's list for your TV and applies it
+the same way, switching apps off with undo.
 
 </details>
 
