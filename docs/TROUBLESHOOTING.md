@@ -555,6 +555,10 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   HDMI inputs. Set `power_on_home` (`config.xml` or a theme) with `HOME_KEY_SERVICE=1`: until the first
   key press after boot or screen-on, `HomeKeyService` sends that Live TV window back to Home. Ask the
   person first; someone who watches broadcast TV may want the opposite, `boot_to_live_tv`.
+- **The TV wakes from standby back on the last HDMI input, and `power_on_home` takes about 5 s or misses it**
+  (Philips 65OLED706, Android TV 11): the firmware only resumes the `org.droidtv.playtv` window it left, which
+  sends its window event once the input has a picture, if at all. Set `power_on_home_always` too: Home comes
+  up about a second after the screen turns on, whatever is in front (an input, Live TV or an app).
 
 ## Accessibility helper enabled but the remote button does nothing
 

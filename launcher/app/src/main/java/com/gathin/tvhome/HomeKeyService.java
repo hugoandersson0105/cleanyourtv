@@ -38,6 +38,8 @@ import java.util.Set;
  *
  * With power_on_home set, a Live TV window (live_tv_package) that the firmware opens by itself at power-on is sent
  * back here too, until the first key press after boot or after the screen turns on (Changhong / Homwee boards).
+ * With power_on_home_always set, Home comes up at every power-on whatever is in front, for TVs that resume their
+ * last source: a Philips back on an HDMI input sends no window event until the input has a picture.
  *
  * Enable over adb:
  *   settings put secure enabled_accessibility_services com.gathin.tvhome/.HomeKeyService
@@ -68,6 +70,8 @@ public class HomeKeyService extends AccessibilityService {
     /** power_on_home: the Live TV package to send back to Home, empty when off; armed until this uptime or a key. */
     private String powerOnLiveTv = "";
     private long powerOnUntil;
+    /** power_on_home_always: Home at every power-on, not only over Live TV. */
+    private boolean powerOnAlways;
     /** power_on_home: re-arms after the screen turns on; null unless the key is on. */
     private BroadcastReceiver screenOnReceiver;
     /** Stops key filtering while a game controller is connected; null unless gamepad_passthrough and key_filter, or before the unlock. */
@@ -194,7 +198,8 @@ public class HomeKeyService extends AccessibilityService {
                 ? getSharedPreferences(Config.SETTINGS_NAME, MODE_PRIVATE).getString(OpenOnStart.KEY, "") : "";
         powerOnLiveTv = config.powerOnHome && !config.bootToLiveTv && !config.liveTvPackage.equals(openOnStart)
                 ? config.liveTvPackage : "";
-        if (!powerOnLiveTv.isEmpty()) {
+        powerOnAlways = config.powerOnHomeAlways && !config.bootToLiveTv && openOnStart.isEmpty();
+        if (!powerOnLiveTv.isEmpty() || powerOnAlways) {
             armPowerOnHome();
         } else if (screenOnReceiver != null) {
             unregisterReceiver(screenOnReceiver);
@@ -285,15 +290,31 @@ public class HomeKeyService extends AccessibilityService {
 
     /** power_on_home: armed for the boot window (if this bind is part of the boot) and after every screen-on. */
     private void armPowerOnHome() {
-        if (SystemClock.elapsedRealtime() < BOOT_WINDOW_MS) powerOnUntil = BOOT_WINDOW_MS;
+        if (SystemClock.elapsedRealtime() < BOOT_WINDOW_MS) {
+            powerOnUntil = BOOT_WINDOW_MS;
+            if (powerOnAlways) handler.postDelayed(this::homeAtPowerOn, POWER_ON_ALWAYS_DELAY_MS);
+        }
         if (screenOnReceiver != null) return;
         screenOnReceiver = new BroadcastReceiver() {
             @Override
             public void onReceive(Context context, Intent intent) {
                 powerOnUntil = SystemClock.elapsedRealtime() + SCREEN_ON_WINDOW_MS;
+                if (powerOnAlways) handler.postDelayed(HomeKeyService.this::homeAtPowerOn, POWER_ON_ALWAYS_DELAY_MS);
             }
         };
         registerReceiver(screenOnReceiver, new IntentFilter(Intent.ACTION_SCREEN_ON));
+    }
+
+    /** power_on_home_always: after the firmware has brought its last source back (Philips: within 0.5 s). */
+    static final long POWER_ON_ALWAYS_DELAY_MS = 800L;
+
+    /** power_on_home_always: Home, unless a key was pressed since the screen came on (the user has the TV). */
+    private void homeAtPowerOn() {
+        if (stillArmed(SystemClock.elapsedRealtime(), powerOnUntil)) openHome();
+    }
+
+    static boolean stillArmed(long now, long armedUntil) {
+        return now < armedUntil;
     }
 
     static boolean powerOnRedirect(String liveTv, CharSequence pkg, long now, long armedUntil) {

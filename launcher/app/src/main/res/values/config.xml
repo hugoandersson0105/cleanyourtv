@@ -205,6 +205,10 @@
          to the user, so opening Live TV on purpose is never undone. The opposite of boot_to_live_tv, and ignored
          when that is on. A theme's config.json can set it too. Off by default. -->
     <bool name="power_on_home">false</bool>
+    <!-- Home at every power-on, whatever the firmware put in front (the last HDMI input, Live TV or an app),
+         for TVs that come back to the last source, like Philips. Needs HOME_KEY_SERVICE=1; a key pressed first
+         wins. Ignored with boot_to_live_tv or an Open on start app. Can also be set with "power_on_home_always". -->
+    <bool name="power_on_home_always">false</bool>
 
     <!-- Show the Solar Hijri (Shamsi) date used in Iran and Afghanistan, e.g. "27 Mehr 1405", above the
          Gregorian date. -->
