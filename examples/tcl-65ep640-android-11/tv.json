@@ -1,0 +1,6 @@
+{
+  "tv": "TCL 65EP640 (BeyondTV, Android TV 11)",
+  "os": "Android TV 11",
+  "brand": "TCL",
+  "notes": "Subset of the `tcl-55ep640/` list (same Android 11 firmware family; `tcl-65ep640/` is the Android 9 firmware): TCL analytics, TCL Channel and promo feeds, dashboard, TGuard, user centre and USB media centre off; voice off by choice (the mic button goes dead); stock tvlauncher off once the reference launcher owns Home; Chromecast, Miracast/MagiConnect, OTA and setupwraith kept; 25 packages were already disabled at the start"
+}

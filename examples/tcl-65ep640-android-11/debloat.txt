@@ -1,0 +1,64 @@
+# TCL 65EP640 (ro.product.model BeyondTV), Android TV 11 (API 30), build PPR1.180610.011,
+# fingerprint TCL/BeyondTV/BeyondTV:11/PPR1.180610.011/AR05:user/release-keys, ro.adb.secure=1.
+# Same firmware family and package set as examples/tcl-55ep640 (Android TV 11): every package below is on that list.
+# The folder examples/tcl-65ep640 is the same model on older firmware (Android TV 9, AP06) with its own package set.
+# This list is the subset that was actually disabled on this Android TV 11 unit.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/tcl-65ep640-android-11/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/tcl-65ep640-android-11/debloat.txt
+# Install the launcher BEFORE disabling the stock launcher (launcher/build-and-install.sh).
+# Stock launcher: com.google.android.tvlauncher. Live TV app: com.tcl.tv. Tuner and HDMI: com.tcl.tvinput.
+#
+# Already disabled when we started, left alone: the 15 uk.co.freeview.* apps, au.com.stan.and,
+# com.tcl.gallery, com.tcl.notereminder, com.tcl.smartalexa, com.tcl.tv.tclhome_master, tv.wuaki.apptv,
+# com.google.android.apps.nbu.smartconnect.tv, com.google.android.videos, com.google.android.play.games,
+# com.google.android.youtube.tvmusic.
+#
+# On the tcl-55ep640 list but not disabled here: com.android.dreams.basic, com.hitv.explore,
+# com.spotify.tv.android, tunein.player. Not touched either: Chromecast (com.google.android.apps.mediashell),
+# Miracast / MagiConnect (com.tcl.miracast, com.tcl.MultiScreenInteraction_TV), the TCL OTA updater
+# (com.tcl.versionUpdateApp) and setupwraith.
+#
+# DO NOT DISABLE (load-bearing on this firmware family, see examples/tcl-55ep640):
+# com.tcl.tv com.tcl.tvinput                          # Live TV, tuner, HDMI
+# com.tcl.keycustomfunctionservice                    # remote key handling, fallback home
+# com.tcl.inputmethod.international                   # default keyboard
+# com.tcl.settings com.tcl.initsetup com.tcl.factory.view com.tcl.providers.config
+# com.tcl.xian.StartandroidService                    # device authentication
+# com.tcl.partnercustomizer                           # carries the remote's TKey activity
+# com.tcl.systemserver com.tcl.autopair               # system service, BT remote pairing
+# com.tvos                                            # tvos framework resources
+# com.google.android.tungsten.setupwraith             # may own a saved Wi-Fi network
+
+# 1. Telemetry, analytics and attribution
+com.tcl.bi                                  # TCL BI analytics
+com.google.android.feedback                 # "send feedback"
+com.google.android.tvrecommendations        # home-screen recommendation rows
+com.google.android.partnersetup             # partner-app attribution
+com.google.android.onetimeinitializer       # one-time setup leftovers
+android.autoinstalls.config.tcl.device      # partner-app auto installer
+
+# 2. TCL content, promos and background extras
+com.tcl.overseasappshow                     # promo/app-show service
+com.tcl.tv.tclhome_passive                  # pushes TCL content onto the home screen at boot
+com.tcl.waterfall.overseas                  # "TCL Channel" web content feed
+com.tcl.messagebox                          # pushed messages and promos
+com.tcl.esticker                            # retail demo energy-label sticker
+com.tcl.guard                               # TGuard cleaner / device-use tracking
+com.tcl.usercenter                          # TCL account
+com.tcl.dashboard                           # TCL IoT dashboard, giftbox and MessageBox promos
+com.tcl.copydatatotv                        # phone-to-TV data migration
+com.tcl.useragreement                       # end-user agreement screens
+com.tcl.ui_mediaCenter                      # USB media centre
+
+# 3. Voice, off by choice. The mic button goes dead. Comment out to keep the assistant.
+com.google.android.katniss                  # Google Assistant / voice search
+com.google.android.tv.assistant             # Assistant LED service
+com.tcl.assistant                           # TCL voice service
+com.tcl.micmanager                          # TCL microphone manager
+
+# 4. Off by choice
+com.android.printspooler                    # printing service
+
+# 5. After the launcher is installed
+com.google.android.tvlauncher               # stock launcher, replaced by launcher/
