@@ -312,6 +312,25 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   and `query-activities` answer with the resolver table's winner, which is not necessarily the
   activity that takes focus: `dumpsys activity activities | grep mFocusedApp` is the ground truth,
   and it is what to check before saying the takeover worked.
+- **Home works when tapped but does nothing when pressed firmly**, after the stock launcher is
+  disabled, seen on a Philips 65OLED804/12 (TPM191E, Android TV 12, `STT2.230526.001`) with a slow
+  third-party remote whose presses last 430 to 550 ms. Android turns a Home press held past 400 ms
+  into its long-press action, and `dumpsys window policy` shows it is
+  `mLongPressOnHomeBehavior=LONG_PRESS_HOME_ALL_APPS`. `PhoneWindowManager.launchAllAppsAction` sends
+  `ACTION_ALL_APPS` to the system-image Home only (`MATCH_SYSTEM_ONLY`), which with the stock
+  launcher disabled is `com.android.tv.settings/.system.FallbackHome`, and nothing answers it there:
+  logcat shows `START u0 {act=android.intent.action.ALL_APPS pkg=com.android.tv.settings}` 400 ms
+  after each key down and the TV stays where it was. Before the debloat the stock launcher answered
+  with its app grid, so it looked like Home. An injected `input keyevent --longpress KEYCODE_HOME`
+  reproduces it and a plain `input keyevent KEYCODE_HOME` does not. `settings put secure
+  long_press_timeout 800` does not move the limit, not even after a reboot. `home_long_press_home`
+  in `config.xml` or a theme, with `HOME_KEY_SERVICE=1` at install, makes `HomeKeyService` take every
+  Home press and open Home on release. That needs the helper to filter keys, so it costs the held-key
+  repeat described under [the key-repeat section](#a-key-helper-is-bound-and-a-held-remote-button-stopped-repeating).
+  Confirmed on this set: with `HomeKeyService` bound, Volume Down held for 3 s gave one step in
+  `dumpsys audio`; unbound, a 1.07 s hold gave 14 repeats 50 ms apart. Single presses step once either
+  way, also through HDMI ARC to a home cinema system. Choose between a firm Home press and a held volume
+  ramp; this set cannot have both.
 - **The TV drops off Wi-Fi for good the moment setupwraith is disabled**, seen on Google TV 14 (Sony
   BRAVIA 9 II, Philips R8G, Skyworth SWTV-24NA-4K NF, Xiaomi TV Box S 3rd gen MiTV-AFMU0) and on a TCL
   G07 on Google TV 11 (build AR17; on AR20 the network belonged to `android.uid.system`). A Wi-Fi
