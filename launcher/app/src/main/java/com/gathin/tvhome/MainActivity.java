@@ -957,6 +957,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             updateWifiLabel();
             updateInputsButton();
             pillsShown = true;
+            // This first label is measured before the window is attached, when the pill's drawableStart isn't
+            // counted in its padding yet, so a VPN badge after "Ethernet" got cut off. Measure again once drawn (#961).
+            refreshPillsAfterNextDraw();
         }
         if (showStats) startStats();
         sky.update();
