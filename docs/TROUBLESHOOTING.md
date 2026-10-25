@@ -936,6 +936,15 @@ handled go dead, the same trade without a `settings` write. Write back the exact
 printed; the empty list also unbinds TalkBack. Bisect, keycodes and limits:
 [the G09 note](devices/tcl-55p71b-g09-key-repeat.md).
 
+Where launcherx is what answers the buttons, keeping it enabled and redirecting its home screen keeps both. On a
+Sony BRAVIA VU3 (`BRAVIA_VU3_4K`, Google TV 14, `UKR1.240726.001`) the Netflix, YouTube, Prime Video and YouTube
+Music buttons are global keys (`BUTTON_4`, `BUTTON_14`, `BUTTON_2`, `BUTTON_15`) routed to
+`com.realtek.advancesetting`, which on a Google TV hands each launch to launcherx's `GlobalButtonLaunch_Receiver`
+and drops it when launcherx is disabled. `InputKeyService` with their scancodes in `app_keys` opened all four but
+cost the ramp, and the volume key never reached the helper, so `consume_volume_keys` could not repeat it.
+launcherx enabled, `stock_home_redirect` set to it, `key_filter` false and `HomeKeyService` bound gave the buttons,
+the ramp and the new Home together ([the VU3 notes](../examples/sony-bravia-vu3/README.md)).
+
 A [Sony KD-55X9000H PA-firmware follow-up](devices/sony-kd-55x9000h.md#later-remote-key-follow-up-24-october-2026) on Android 12 reproduced the same filter/repeat conflict with a personal fork. Its simultaneous kernel/callback capture saw held Volume in hardware but neither Volume direction in the helper. A separate saved-layout experiment retained Apps and native Volume without key filtering; it requires that fork's companion and Library entry, reserves an application-launch category, and has not been tested across restart/sleep/reconnect. It is not a stock upstream option.
 
 ## The power key does not wake the TV while the key helper is bound
