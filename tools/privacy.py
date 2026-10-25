@@ -326,6 +326,15 @@ def list_lines(result, include_low, name):
         "# Each line says what the package is and why it is here. Nothing below is proven to record",
         "# anything: the audit reports what the firmware and the packages declare.",
     ]
+    if include_low and result["skipped"]:
+        # The report counts the name matches the probe cap left out; a list of name matches that
+        # does not would look complete.
+        lines += [
+            "#",
+            f"# {result['skipped']} more name matches were not probed (the audit stops at "
+            f"{MAX_PROBES}) and are not in this list;",
+            "# check them by hand with `dumpsys package <name>`.",
+        ]
     for title, group in sections(keep):
         lines.append("")
         lines.append(f"# {title}")
@@ -337,11 +346,23 @@ def list_lines(result, include_low, name):
     return lines
 
 
-def write_list(path, result, include_low):
+def target_problem(path):
+    """Why --write cannot write the file `path`, or None."""
     if os.path.exists(path):
         # A second audit of the same TV may legitimately differ, but silently replacing a list the
         # owner is about to apply is how a hand edit disappears.
-        raise SystemExit(f"{path} already exists; move it aside or choose another name.")
+        return f"{path} already exists; move it aside or choose another name."
+    folder = os.path.dirname(path) or "."
+    if not os.path.isdir(folder):
+        return f"there is no folder {folder} for {path}; create it or choose another name."
+    return None
+
+
+def write_list(path, result, include_low):
+    # main() checked before the audit too; this is for a file or folder that changed while it ran.
+    problem = target_problem(path)
+    if problem:
+        raise SystemExit(problem)
     # The header names the file as it was typed, like the commands printed below; an absolute path
     # is cut to the file name, which keeps the owner's home folder out of the list.
     lines = list_lines(result, include_low, os.path.basename(path) if os.path.isabs(path) else path)
@@ -349,6 +370,10 @@ def write_list(path, result, include_low):
         f.write("\n".join(lines) + "\n")
     names = sum(1 for line in lines if line and not line.startswith("#"))
     print(f"wrote {names} packages to {path}")
+    if include_low and result["skipped"]:
+        print(f"{result['skipped']} more name matches were not probed (the audit stops at "
+              f"{MAX_PROBES}), so the list leaves them out; check them by hand with "
+              "`dumpsys package <name>`.")
     print(f"apply:   TV_HOST={os.environ.get('TV_HOST', '<tv ip>')} tools/disable.sh {path}")
     print(f"undo:    TV_HOST={os.environ.get('TV_HOST', '<tv ip>')} tools/restore.sh {path}")
     print(f"read it first: the comments say what each one takes with it.")
@@ -363,6 +388,13 @@ def main():
                          "       privacy.py --write <file> [--include-low]\n"
                          "                                    write the candidates as a debloat list\n")
         return 2
+
+    if args:
+        # Checked before connecting: the audit sends two commands for every package it probes,
+        # and `dumpsys package` is slow on old firmware, all for a file that could not be written.
+        problem = target_problem(args[1])
+        if problem:
+            raise SystemExit(f"{problem} Nothing was asked of the TV.")
 
     dev = connect()
     try:
