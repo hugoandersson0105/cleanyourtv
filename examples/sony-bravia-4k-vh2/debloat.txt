@@ -65,6 +65,32 @@
 # Lived with since 19 October 2026 with a custom launcher (its own app, not this repo's); nothing has
 # broken in daily use (owner's report).
 # The commented "one day" group at the end was disabled four days later and has only had a day so far.
+#
+# Fourth unit, North American firmware again, but a different build string from the second: KD-55X80J,
+# build BRAVIA_VH2_UC-user 12 STT2.230505.001.S136 682241 (no "_M_"), ro.adb.secure=1, on Wi-Fi. Applied on
+# 20 October 2026 in small batches, then the launcher; lived with since, nothing has broken (owner's
+# report). Applied from the list below: the tracker, telemetry, demo and preloaded groups, promos,
+# sonyselect, sonytab, setupwraith and launcherx, all present and all disabled cleanly. What this unit adds:
+#
+#  - Factory-disabled here: b2b.vendorprotocol, b2b.softap and com.sony.dtv.livingfit. So b2b.vendorprotocol
+#    did NOT ship enabled on this UC build, unlike the BRAVIA_VH2_M_UC unit above. Enabled and installed:
+#    promos, sonyselect, sonytab, seeds.iot, seeds.iot.remotestart, sonypicturescore and the Apple TV app
+#    (com.apple.atve.sony.appletv, which the EU line above calls factory-disabled). The UK and German apps
+#    are not installed.
+#  - launcherx registers HOME at priority=2 here too: with it enabled, `set-home-activity` printed Success
+#    and the real Home key still landed on launcherx. launcherx and setupwraith were disabled one after the
+#    other before Home was checked, so this unit does not say whether either alone would have been enough.
+#    Home then resolved to the new launcher, and still did after a full restart.
+#  - Wi-Fi: this is the unit where the setup wizard did own the saved network. Before disabling it,
+#    `dumpsys wifi | grep -o 'cname=[^ ]*'` listed com.google.android.tungsten.setupwraith. After forgetting
+#    the network and joining it again in Settings it listed com.android.tv.settings, setupwraith was
+#    disabled, and the TV stayed on Wi-Fi with ADB still answering.
+#  - The Input-button service (INPUT_KEY_SERVICE=1) was enabled and the real Input button worked. It was
+#    not tried without the service, so this unit does not confirm the second unit's finding that Sony's
+#    firmware answers the button alone.
+#  - Not tried here: seeds.iot, seeds.iot.remotestart, launcherxcustomizer and the Asia-Pacific groups
+#    below apart from sonytab. Left alone because it was not clear what they do: ondservice,
+#    ecodashboard, frame, smartmediaapp, preinappfiltering, eulaviewer.
 
 # Fourth unit, EU M variant: hardware SKU XR-65A83J, product BRAVIA_VH2_M_EU, Android 12/API 31,
 # build BRAVIA_VH2_M_EU-user 12 STT2.230505.001.S136 682241. This unit behaved like the UC/PA units
