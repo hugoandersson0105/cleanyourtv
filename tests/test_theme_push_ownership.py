@@ -323,7 +323,7 @@ class ThemePushTest(unittest.TestCase):
     def test_the_windows_script_clears_the_collection_on_reset(self):
         """theme.ps1 cannot run here, so the -Reset branch is pinned as text against theme.sh."""
         script = (TOOLS / "theme.ps1").read_text(encoding="utf-8")
-        reset = next(line for line in script.splitlines() if line.strip().startswith("& $py -I tv.py \"mkdir -p $dir"))
+        reset = next(line for line in script.splitlines() if line.strip().startswith("Invoke-Tv tv.py \"mkdir -p $dir"))
         self.assertIn("$(Drop 'wallpapers/captions.txt')", reset)
         self.assertIn("$clearWallpapers", reset, "one shared clear, as in theme.sh")
         clear = next(line for line in script.splitlines() if line.startswith("$clearWallpapers = "))
