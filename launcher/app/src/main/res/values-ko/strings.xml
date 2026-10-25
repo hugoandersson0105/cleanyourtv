@@ -144,4 +144,5 @@
     <string name="race_countdown_days">%1$d일 %2$d시간</string>
     <!-- Cinematic top shelf (cinematic_home): %1$s is when it was last opened, e.g. "5분 전". -->
     <string name="last_opened">마지막 실행 %1$s</string>
+    <string name="safe_mode">반복된 비정상 종료로 안전 모드입니다. 테마와 추가 기능이 꺼져 있습니다. 수정한 테마를 보내거나 tools/theme.sh --reset을 실행하면 해제됩니다.</string>
 </resources>
