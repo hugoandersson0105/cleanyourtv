@@ -10,7 +10,7 @@ project's own issue tracker.
 
 **Jump to:** [Home screens built as their own app](#home-screens-built-as-their-own-app) · [Forks of the launcher](#forks-of-the-launcher) · [Screensavers and add-ons](#screensavers-and-add-ons) · [Tools and companion apps](#tools-and-companion-apps) · [Other platforms: Fire TV and LG webOS](#other-platforms-fire-tv-and-lg-webos) · [Add-ons in this repo](addons/README.md) · [Guides and write-ups](#guides-and-write-ups) · [Find a project by TV brand](#find-a-project-by-tv-brand) · [Add yours](#add-yours)
 
-116 projects so far.
+117 projects so far.
 
 ## Home screens built as their own app
 
@@ -107,6 +107,7 @@ This repo's launcher with new looks or features, often tuned for one TV. Good pl
 | [Apple TV 8-Dock](https://github.com/meoptimus/cleanyourtv/tree/apple-tv-8dock) | An Apple TV-styled minimalist fork with an 8-column dock, dedicated sliders icon, icon-only TV settings and streamlined on-device dock configuration | Xiaomi Mi TV (MiTV-MOOQ0, croods), Android TV 10 | [meoptimus](https://github.com/meoptimus) |
 | [Home styles: Aurora, Cinema and Orbit](https://github.com/YuvrajSingh808/cleanyourtv/blob/home-styles/FORK.md) ([screenshot](https://raw.githubusercontent.com/YuvrajSingh808/cleanyourtv/fdc18b3005ef936621a8bd821f922121dead1916/docs/home-styles/orbit.jpg), [issues](https://github.com/YuvrajSingh808/cleanyourtv/issues)) | Three Home layouts picked in Launcher settings, the original kept as Classic: Aurora (drifting light behind a glass dock), Cinema (the app's artwork as a slowly zooming backdrop) and Orbit (a 3D carousel over a star field); no network or new permissions | Xiaomi Mi TV 4i (MiTV4I), Android TV 9 | [YuvrajSingh808](https://github.com/YuvrajSingh808) |
 | [Taskbar & System Manager](https://github.com/arsha123449/cleanyourtv-free-ram) | An opt-in taskbar popup with live RAM/CPU readouts and running apps shortcut, plus a web task manager; no internet permission in the launcher | Thomson Smart TV, Android TV 11 | [arsha123449](https://github.com/arsha123449) |
+| [Glass home with this week's trending series](https://github.com/viniciustheodoro/newdesignforyourTV) ([APK](https://github.com/viniciustheodoro/newdesignforyourTV/releases/latest), [screenshot](https://raw.githubusercontent.com/viniciustheodoro/newdesignforyourTV/490f62c9506629cac4dadf88b8e7217494b946e0/docs/glass/glass-netflix.jpg)) | A fork whose Home follows the "Glass" launcher @sohanj showed on Threads: the main streaming apps as one row of wordmark pills that take the brand's own colours on focus, and behind them each service's trending series of the week in Brazil (TMDB weekly trending, filtered by the Brazilian catalogue; films for MUBI), composed once a week so nothing blurs live on 1 GB. Clock, weather, Bluetooth and inputs in the top bar; Favourites, Apps and Tools tabs. Installed without ADB, through Downloader and SAI, since this projector's developer options cannot be reached. Network: TMDB with the owner's own key, typed on the TV, plus Open-Meteo and GeoJS for the weather; no analytics | Bettdow AC1041-X7 projector (HiSilicon, 1 GB, no Google certification), Android 9 | [viniciustheodoro](https://github.com/viniciustheodoro) |
 
 ## Screensavers and add-ons
 
@@ -181,6 +182,7 @@ By the TV each project was built and tested on. Most of them run on other Androi
 - **Amazon Fire TV:** [CleanYourTV on Fire OS](https://github.com/GaneshVarma1/cleanyourtv/tree/fire-tv-launcher-settings-fix), [Fire OS 6 Home watcher](https://github.com/ljis120301/tv-vibehack/tree/fire-tv-support), [Fire OS 7 fast Home](https://github.com/andrewsaad/fire-tv-cleanup), [Fire TV Glass](https://github.com/ivantrj/firetv-glass-launcher), [Fire TV Stick Lite cleanup (AFTSS)](https://github.com/eteen12/firetv-stick-aftss-cleanup), [Fire TV → Apple TV front end](https://github.com/NikhilSiddhu/firetv-tvos), [fire-tv-cleanup](https://github.com/itsmeterrylin/fire-tv-cleanup), [Home Return and weather moods on a Fire TV](https://github.com/bansiman/cleanyourtv/tree/my-tv), [Violet Horizon](https://github.com/Kiwicoop247/firetv-glass-launcher/tree/violet-horizon)
 - **Baron (CloudWalker OS):** [Baron Home](https://github.com/sethihq/baron-tv)
 - **BenQ:** [Navigation sounds](https://github.com/rocavence/tv-vibehack/tree/nav-sounds)
+- **Bettdow:** [Glass home with this week's trending series](https://github.com/viniciustheodoro/newdesignforyourTV)
 - **Changhong:** [Glance line and crimson glass on a Changhong](https://github.com/bayhaqy/cleanyourtv/blob/main/my-tv/README.md)
 - **Chromecast with Google TV:** [Cast Fix](https://github.com/thayford/castfix), [Chromecast glass fork](https://github.com/NewPlayer0213/cleanyourtv/blob/showcase/FORK.md), [Weather Clock](https://github.com/matyivagyok/weatherclock-tv)
 - **Formovie:** [CleanTV by VGS](https://github.com/vgscity/vgs-cleantv), [Homelab companion](https://github.com/epochcoder/cleanyourtv/tree/main/companion)
