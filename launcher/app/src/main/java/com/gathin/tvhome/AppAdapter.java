@@ -145,6 +145,16 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     static final float TOP_ROOM_DP = 12;
 
     /**
+     * rows_middle / rows_offset_dp: the dock row's top for a grid of height h, from the usual top want. middle centres
+     * the dock row (dockRow tall) first; offset then moves it; the result stays between floor (under the clock) and
+     * the last place a whole tile (itemH) still fits.
+     */
+    static int movedDockTop(int want, int h, int dockRow, int itemH, boolean middle, int offset, int floor) {
+        int top = (middle ? (h - dockRow) / 2 : want) + offset;
+        return Math.max(floor, Math.min(h - itemH, top));
+    }
+
+    /**
      * Tile width that fits the columns across and, with rows_below_dock > 0, the dock (with its title above it,
      * if shown) plus that many rows down the grid's height; the smaller wins. With rows_below_dock = 0, or before
      * the grid has a height, only the width counts, as before. Without this, 2 or 3 rows below the dock did not

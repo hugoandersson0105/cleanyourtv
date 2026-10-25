@@ -609,6 +609,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // A single row never shows the names under its tiles (the title above the row names the app), so the
             // 7dp gap and 22dp label item_app.xml keeps for them would only lift the row: sit it that much lower.
             if (singleRow && !cfg.alwaysShowNames) want += (int) (29 * density);
+            // rows_middle / rows_offset_dp: the dock row centred, or moved, but never over the clock or off the screen.
+            if (MainActivity.this.dockRow && (cfg.rowsMiddle || cfg.rowsOffsetDp != 0)) {
+                want = AppAdapter.movedDockTop(want, h, dockRow, itemH, cfg.rowsMiddle, (int) (cfg.rowsOffsetDp * density),
+                        Math.max((int) (AppAdapter.TOP_ROOM_DP * density), hero.getBottom() + (int) (8 * density)));
+            }
             if (grid.getPaddingTop() != want) {
                 grid.setPadding(grid.getPaddingLeft(), want, grid.getPaddingRight(), grid.getPaddingBottom());
                 // A vertical grid parks the dock on the new padding line by scrolling (onTileFocused); a sideways

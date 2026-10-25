@@ -214,6 +214,11 @@
     <!-- The date (with the Shamsi and lunar lines) on its own line under the clock instead of beside it, for a top bar
          whose pills leave the date too little room. Can also be set with "date_below_clock" in a theme. -->
     <bool name="date_below_clock">false</bool>
+    <!-- Where the dock row sits. rows_offset_dp moves it and the rows under it down (positive) or up (negative), from
+         -300 to 300 dp; rows_middle centres it on the screen instead of near the bottom. Either way the row never
+         goes over the clock or off the bottom. A theme can set both ("rows_offset_dp", "rows_middle"). -->
+    <integer name="rows_offset_dp">0</integer>
+    <bool name="rows_middle">false</bool>
 
     <!-- A name after the greeting: "Mr. Trịnh" shows GOOD MORNING, MR. TRỊNH. Empty: the greeting alone. -->
     <string name="greeting_name" translatable="false"></string>
