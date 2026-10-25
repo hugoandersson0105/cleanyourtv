@@ -326,6 +326,68 @@
                 android:focusable="false"
                 android:visibility="gone" />
 
+            <!-- Cricket scores. Gone, and not focusable, until a key is saved and a listed team is playing. -->
+            <LinearLayout
+                android:id="@+id/statusLines"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_below="@id/stats"
+                android:layout_alignEnd="@id/leftBlock"
+                android:layout_marginTop="18dp"
+                android:orientation="vertical"
+                android:gravity="end">
+
+            <LinearLayout
+                android:id="@+id/cricket"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_gravity="end"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:focusable="false"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/cricketScores"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:maxWidth="780dp"
+                    android:maxLines="3"
+                    android:ellipsize="end"
+                    android:gravity="right"
+                    android:textColor="#F2FFFFFF"
+                    android:textSize="16sp"
+                    android:lineSpacingExtra="3dp"
+                    android:fontFamily="@string/font_medium"
+                    android:focusable="false" />
+
+                <ImageView
+                    android:id="@+id/cricketStale"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
+                    android:layout_marginStart="8dp"
+                    android:padding="8dp"
+                    android:src="@drawable/cricket_stale"
+                    android:background="@drawable/cricket_stale_bg"
+                    android:scaleType="fitCenter"
+                    android:focusable="false"
+                    android:visibility="gone"
+                    android:contentDescription="@string/cricket_stale"
+                    android:nextFocusDown="@id/grid" />
+
+                <TextView
+                    android:id="@+id/cricketStaleTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="6dp"
+                    android:textColor="#FFF5C542"
+                    android:textSize="13sp"
+                    android:fontFamily="@string/font_medium"
+                    android:focusable="false"
+                    android:visibility="gone" />
+            </LinearLayout>
+            </LinearLayout>
+
             <LinearLayout
                 android:id="@+id/topButtons"
                 android:layout_width="wrap_content"

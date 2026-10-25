@@ -146,9 +146,15 @@
             android:textSize="14sp" />
 
         <TextView
-            android:id="@+id/tvSettingsChoice"
+            android:id="@+id/cricketChoice"
             style="@style/SettingsRow"
             android:layout_marginTop="18dp"
+            android:text="@string/cricket_settings" />
+
+        <TextView
+            android:id="@+id/tvSettingsChoice"
+            style="@style/SettingsRow"
+            android:layout_marginTop="10dp"
             android:text="@string/tv_settings" />
     </LinearLayout>
 </ScrollView>

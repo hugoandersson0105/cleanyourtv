@@ -149,4 +149,43 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+
+    <string name="cricket_settings">Cricket scores</string>
+    <string name="cricket_show">Show scores: %1$s</string>
+    <string name="cricket_key">API key: %1$s</string>
+    <string name="cricket_key_set">Saved</string>
+    <string name="cricket_key_missing">Not set</string>
+    <string name="cricket_key_title">Cricket API key</string>
+    <string name="cricket_key_message">Stored only on this TV. Scores are requested from CricketData while Home is on screen.</string>
+    <string name="cricket_key_hint">The key stays on this TV. Scores stay off until you save one and turn them on.</string>
+    <string name="cricket_key_entry">Key</string>
+    <string name="cricket_key_bad">That key does not look right.</string>
+    <string name="cricket_key_saved">Key saved</string>
+    <string name="cricket_key_failed">The key could not be saved on this TV.</string>
+    <string name="cricket_save">Save</string>
+    <string name="cricket_clear_key">Clear API key</string>
+    <string name="cricket_clear_confirm">Remove the saved key and hide scores?</string>
+    <string name="cricket_teams">Teams</string>
+    <string name="cricket_teams_hint">Higher teams are shown first. Add or remove a side by its scoreboard code, such as NED.</string>
+    <string name="cricket_add">Add Country</string>
+    <string name="cricket_add_title">Team code</string>
+    <string name="cricket_add_hint">IND</string>
+    <string name="cricket_up">Up</string>
+    <string name="cricket_down">Down</string>
+    <string name="cricket_remove">Remove</string>
+    <string name="cricket_move_up">Move %1$s up</string>
+    <string name="cricket_move_down">Move %1$s down</string>
+    <string name="cricket_remove_team">Remove %1$s</string>
+    <string name="cricket_custom">%1$s    Added by code</string>
+    <string name="cricket_bad_code">Use 2 to 4 letters, such as NED.</string>
+    <string name="cricket_duplicate">That code is already in the list.</string>
+    <string name="cricket_full">The list holds 24 teams.</string>
+    <string name="cricket_stale">Scores may be out of date</string>
+    <string name="cricket_updated">Last updated %1$s</string>
+    <string name="cricket_status_off">Scores are off</string>
+    <string name="cricket_status_needs_key">Add an API key to show scores</string>
+    <string name="cricket_status_waiting">Waiting for the first scores</string>
+    <string name="cricket_status_updated">Updated %1$s</string>
+    <string name="cricket_status_none">Updated %1$s · no matches for these teams</string>
+    <string name="cricket_status_stale">Couldn\'t refresh · showing %1$s</string>
 </resources>
