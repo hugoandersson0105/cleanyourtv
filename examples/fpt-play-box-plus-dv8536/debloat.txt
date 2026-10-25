@@ -1,0 +1,40 @@
+# FPT Play Box+ (SDMC DV8536-KVF), Vietnam, Android TV 10 (device DV8536-KVF), firmware build not recorded
+# Carrier box of FPT Play. Made by SDMC.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/fpt-play-box-plus-dv8536/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/fpt-play-box-plus-dv8536/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Sent from the CleanTV app (a phone app built on this repo's lists and launcher) by the set's owner on
+# 2026-10-25, with the rating "works" (1 report with that rating, none against).
+# CleanTV picked the packages from this repo's rules for an unknown TV (only ones turned off on many other
+# sets and kept by none), and the owner could untick any of them. The firmware build and how many days the
+# owner lived with it were not collected: treat it as a first list and update it if something breaks.
+
+# Maker / carrier apps and services
+android.autoinstalls.config.sdmc
+
+# Google extras
+com.google.android.feedback               # feedback reporter
+com.google.android.marvin.talkback        # TalkBack
+com.google.android.partnersetup
+com.google.android.sss.authbridge
+com.google.android.syncadapters.calendar
+com.google.android.syncadapters.contacts
+com.google.android.tts
+com.google.android.tv.bugreportsender
+com.google.android.tvrecommendations      # recommendation rows
+
+# Android extras
+com.android.backupconfirm                 # backup confirm dialog
+com.android.camera2                       # camera app
+com.android.cts.ctsshim                   # test shim
+com.android.cts.priv.ctsshim              # test shim
+com.android.dreams.basic                  # basic screensaver
+com.android.dynsystem
+com.android.htmlviewer                    # HTML viewer
+com.android.printspooler                  # printing
+com.android.se
+com.android.settings.intelligence
+com.android.sharedstoragebackup           # backup helper
+com.android.wallpaperbackup               # wallpaper backup

@@ -1,0 +1,43 @@
+# Casper Android TV (BOE VT, barking), Vietnam, Android TV 11 (device barking), firmware build not recorded
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/casper-android-tv-barking/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/casper-android-tv-barking/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Sent from the CleanTV app (a phone app built on this repo's lists and launcher) by the set's owner on
+# 2026-10-24, with the rating "works" (1 report with that rating, none against).
+# CleanTV picked the packages from this repo's rules for an unknown TV (only ones turned off on many other
+# sets and kept by none), and the owner could untick any of them. The firmware build and how many days the
+# owner lived with it were not collected: treat it as a first list and update it if something breaks.
+
+# Maker / carrier apps and services
+com.amazon.amazonvideo.livingroom
+com.netflix.ninja
+com.vewd.core.service
+
+# Google extras
+com.google.android.feedback               # feedback reporter
+com.google.android.marvin.talkback        # TalkBack
+com.google.android.partnersetup
+com.google.android.play.games             # Play Games
+com.google.android.syncadapters.calendar
+com.google.android.tts
+com.google.android.tvrecommendations      # recommendation rows
+com.google.android.videos                 # Play Movies
+com.google.android.youtube.tvmusic        # YouTube Music, off by the owner's choice
+
+# Android extras
+com.android.backupconfirm                 # backup confirm dialog
+com.android.cts.ctsshim                   # test shim
+com.android.cts.priv.ctsshim              # test shim
+com.android.dreams.basic                  # basic screensaver
+com.android.dynsystem
+com.android.hotspot2.osulogin
+com.android.htmlviewer                    # HTML viewer
+com.android.printspooler                  # printing
+com.android.se
+com.android.sharedstoragebackup           # backup helper
+com.android.wallpaperbackup               # wallpaper backup
+
+# Stock home screen (only after the new launcher is installed: launcher/build-and-install.sh)
+com.google.android.tvlauncher             # stock Android TV home: recommendation rows

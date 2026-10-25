@@ -1,0 +1,23 @@
+# Viettel TV360 4K Box (Hisense IP952), Vietnam, Android TV 11 (device IP952), firmware build not recorded
+# Carrier box of Viettel TV360. Made by Hisense.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/viettel-tv360-4k-ip952/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/viettel-tv360-4k-ip952/debloat.txt
+# Everything is DISABLED, not uninstalled. Comment out any line you want to keep.
+#
+# Sent from the CleanTV app (a phone app built on this repo's lists and launcher) by the set's owner on
+# 2026-10-25, with the rating "works" (1 report with that rating, none against).
+# CleanTV picked the packages from this repo's rules for an unknown TV (only ones turned off on many other
+# sets and kept by none), and the owner could untick any of them. The firmware build and how many days the
+# owner lived with it were not collected: treat it as a first list and update it if something breaks.
+
+# Maker / carrier apps and services
+com.dinhlap.dlstore
+com.overdevs.at4k
+net.itvplus.appstore
+
+# Google extras
+com.google.android.syncadapters.calendar
+
+# Stock home screen (only after the new launcher is installed: launcher/build-and-install.sh)
+com.google.android.tvlauncher             # stock Android TV home: recommendation rows
