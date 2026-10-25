@@ -189,7 +189,8 @@ Verify
   Fix what you see before moving on.
 - Live TV, HDMI and some streaming apps (Netflix) give empty screenshots (0 bytes); that is the TV, not a
   broken debloat, and `--screenshot` exits 1 with that message. Check
-  `dumpsys activity activities | grep topResumedActivity` instead (see `docs/TROUBLESHOOTING.md`).
+  `dumpsys activity activities | grep -i ResumedActivity` instead (some builds print no `topResumedActivity`
+  line but do print `mResumedActivity`; see `docs/TROUBLESHOOTING.md`).
 - If screenshots keep showing an app you already left, byte for byte, `screencap` is returning its last
   frame: confirm `mCurrentFocus` in `dumpsys window`, force-stop that app and capture again.
 - If the screen looks enlarged and clipped after an install or a reboot, check the display overrides
