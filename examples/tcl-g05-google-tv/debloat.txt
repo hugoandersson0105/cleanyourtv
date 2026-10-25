@@ -101,6 +101,11 @@ com.google.android.apps.mediashell     # Chromecast built-in
 #   appops set --uid com.android.systemui RECORD_AUDIO ignore   # system-fixed, revoke is refused
 #   cmd appops write-settings
 # Undo: pm grant <pkg> android.permission.RECORD_AUDIO; appops reset <pkg>
+# A firmware update can grant RECORD_AUDIO again (from reading the Android 11 source, not seen on this set):
+# at the first boot after one, Android reruns its default grants, which leave a permission alone only when it
+# is flagged user-set or user-fixed, and pm revoke sets no flag. Android 11 has no shell command for those
+# flags, so after an update check that each still reads granted=false with
+# `dumpsys package <pkg> | grep RECORD_AUDIO`.
 
 # Unclear, left enabled: com.tcl.eva (EvaService, RemoterService), com.mediatek.backgrounddetection,
 # com.tcl.micmanager, com.tcl.externaldevice.update (peripheral updater), smartconnect.tv

@@ -46,6 +46,16 @@ The 15 `uk.co.freeview.*` packages and `tv.wuaki.apptv` were already disabled at
 
   Voice search from the remote needs that permission, so leave it if you use the mic button.
 
+  A firmware update can grant it again. This is from reading the Android 11 source, not from this set or the
+  report: at the first boot after an update (or after a new version of the permission controller), Android
+  reruns its default grants, which leave a permission alone only when it is flagged `user-set` or `user-fixed`
+  (or fixed by policy or the system), and `pm revoke` sets no flag. Android 11 has no shell command for those
+  flags, so after an update check that it still reads `granted=false`:
+
+  ```bash
+  "$PY" -I tools/tv.py 'dumpsys package com.google.android.katniss | grep RECORD_AUDIO'
+  ```
+
 ## Launcher
 
 Built with `launcher/build-and-install.ps1`, Home handed over after verification. Dock: Netflix, Prime Video,
