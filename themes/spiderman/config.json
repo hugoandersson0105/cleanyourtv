@@ -1,0 +1,18 @@
+{
+  "dock_apps": [
+    "com.google.android.youtube.tv",
+    "com.netflix.ninja",
+    "com.amazon.amazonvideo.livingroom",
+    "in.startv.hotstar"
+  ],
+  "columns": 4,
+  "rows_below_dock": 0,
+  "background_color": "#000000",
+  "ambient_glow": false,
+  "wallpaper": true,
+  "wallpaper_true_color": true,
+  "wallpaper_dim": 20,
+  "wallpaper_rotation_minutes": 60,
+  "wallpaper_order": "sequential",
+  "dock_opacity": 88
+}

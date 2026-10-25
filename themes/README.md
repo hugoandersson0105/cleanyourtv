@@ -27,6 +27,7 @@ pushes it with `theme.sh`.
 | `six-columns/` | Six smaller tiles per row and one grid row visible under the dock | <img src="six-columns/screenshot.jpg" width="320" alt="six-columns theme"> |
 | `retro/` | Pure black, a dock with no band or border, a rim-only focus highlight (`glass_style: rim`), no colour gradient, icon-only top buttons, and a wallpaper for morning, afternoon and night. The three pictures are the author's own; see `retro/CREDITS.md`. By [REGT-URRED](https://github.com/REGT-URRED) | <img src="retro/screenshot.jpg" width="320" alt="retro theme"> |
 | `sweden/` | Three photos of Sweden from Wikimedia Commons (the aurora over Abisko, Vasabron at dusk, Skeppsbron in the evening), a new one every hour with its place and photographer under the buttons; six small tiles in a frosted-glass dock, round icon-only buttons, no hero name. The photos are CC BY / CC BY-SA, not MIT: see `sweden/CREDITS.md` | <img src="sweden/screenshot.jpg" width="320" alt="sweden theme"> |
+| `spiderman/` | 18 code-drawn wallpapers: six spider-web art cards (red, blue, gold, teal, violet, crimson) interleaved with twelve motivational-quote cards, a new one every hour; dark background with a drawn spider silhouette and web lines, no third-party art. Regenerate with `make_wallpaper.py` | <img src="spiderman/screenshot.jpg" width="320" alt="spiderman theme"> |
 
 Every theme folder has a `screenshot.jpg` of Home with that theme on a real TV. `tools/theme.sh` never
 pushes it; it is only here so you can see a theme before you try it.
