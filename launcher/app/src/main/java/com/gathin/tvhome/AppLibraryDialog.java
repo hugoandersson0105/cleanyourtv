@@ -8,6 +8,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ResolveInfo;
 import android.graphics.Color;
+import android.graphics.PixelFormat;
 import android.graphics.Rect;
 import android.graphics.drawable.ColorDrawable;
 import android.graphics.drawable.Drawable;
@@ -17,6 +18,7 @@ import android.os.Looper;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -44,6 +46,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /** On-demand installed-app picker. Uses the launcher's glass resources; no backdrop capture or blur. */
@@ -67,9 +70,9 @@ final class AppLibraryDialog {
     }
 
     private final Handler main = new Handler(Looper.getMainLooper());
-    /** Icons loaded for this opening, dropped with it. */
-    private final Map<String, Drawable> icons = new HashMap<>();
-    private final Set<String> iconsLoading = new HashSet<>();
+    /** Artwork loaded for this opening, {banner, icon, uniform_tiles card fill}, dropped with it. */
+    private final Map<String, Drawable[]> art = new HashMap<>();
+    private final Set<String> artLoading = new HashSet<>();
     private final Runnable dismissed;
     private boolean closed;
     /** Only the latest load fills the catalogue, and it shows the popup if an opening is waiting. */
@@ -83,6 +86,14 @@ final class AppLibraryDialog {
     /** library_ok_opens without app_library_selection: OK opens every app, Add to Home is in the hold menu. */
     private final boolean okOpens;
     private final boolean animations;
+    /** library_home_tiles: the cards are Home's tiles (item_app.xml, AppAdapter.Holder) rather than icon cards. */
+    private final boolean homeTiles;
+    /** uniform_tiles, so the library's Home tiles are icon tiles on Home's tinted card too. */
+    private final boolean uniformTiles;
+    private final boolean advancedEffects;
+    private final boolean focusOvershoot;
+    /** app_banners, so a tile shows the same banner as on Home. */
+    private final Map<String, String> appBanners;
     private final boolean rtl;
     private TextView instructions;
     private int totalApps;
@@ -115,12 +126,19 @@ final class AppLibraryDialog {
         if (highlight == null || card.getParent() == null) return;
         Rect rect = new Rect(0, 0, card.getWidth(), card.getHeight());
         shelf.offsetDescendantRectToMyCoords(card, rect);
+        // A Home tile zooms on focus and lifts 4dp with advanced_effects: the glass covers it as it does on Home.
+        float scale = homeTiles ? AppAdapter.focusScale(animations, advancedEffects) : 1f;
+        float lift = homeTiles && advancedEffects ? 4f * density : 0f;
+        int w = Math.round(rect.width() * scale) + dp(12), h = Math.round(rect.height() * scale) + dp(12);
         ViewGroup.LayoutParams lp = highlight.getLayoutParams();
-        lp.width = rect.width() + dp(12);
-        lp.height = rect.height() + dp(12);
-        highlight.setLayoutParams(lp);
-        highlight.setTranslationY(rect.top - dp(6));
-        float x = rect.left - dp(6) + scrollOffset;
+        if (lp.width != w || lp.height != h) {
+            lp.width = w;
+            lp.height = h;
+            highlight.setLayoutParams(lp);
+            if (homeTiles) highlight.setRadius(AppAdapter.cornerRadius(rect.width(), density) * scale);
+        }
+        highlight.setTranslationY(rect.exactCenterY() - h / 2f - lift);
+        float x = rect.exactCenterX() - w / 2f + scrollOffset;
         if (!highlightShown || !animate || !animations) {
             spring.cancel();
             highlight.setTranslationX(x - scrollOffset);
@@ -143,9 +161,16 @@ final class AppLibraryDialog {
         if (popup.isShowing()) popup.update(width, height);
     }
 
-    AppLibraryDialog(Activity activity, boolean animations, boolean reducedMotion, boolean selectionMode, boolean okOpens, Predicate<String> onHome, Runnable changed, Runnable dismissed) {
+    AppLibraryDialog(Activity activity, boolean animations, boolean reducedMotion, boolean selectionMode, boolean okOpens,
+                     boolean homeTiles, boolean uniformTiles, boolean advancedEffects, boolean focusOvershoot, Map<String, String> appBanners,
+                     Predicate<String> onHome, Runnable changed, Runnable dismissed) {
         this.activity = activity;
         this.animations = animations;
+        this.homeTiles = homeTiles;
+        this.uniformTiles = uniformTiles;
+        this.advancedEffects = advancedEffects;
+        this.focusOvershoot = focusOvershoot;
+        this.appBanners = appBanners;
         this.rtl = activity.getResources().getBoolean(R.bool.rtl_app_grid);
         this.reducedMotion = reducedMotion;
         this.selectionMode = selectionMode;
@@ -157,12 +182,13 @@ final class AppLibraryDialog {
         panel = new LinearLayout(activity);
         panel.setLayoutDirection(rtl ? View.LAYOUT_DIRECTION_RTL : View.LAYOUT_DIRECTION_LTR);
         panel.setOrientation(LinearLayout.VERTICAL);
-        panel.setPadding(dp(12), dp(8), dp(12), dp(12));
+        // Home's tiles are taller than the icon cards: the panel gives up a little of its top padding.
+        panel.setPadding(dp(12), dp(homeTiles ? 4 : 8), dp(12), dp(12));
         panel.setBackgroundResource(R.drawable.glass_panel);
         View decor = activity.getWindow().getDecorView();
         catalogWidth = Math.min(dp(800), Math.max(dp(200), decor.getWidth() - dp(64)));
         int width = catalogWidth;
-        int height = dp(280);
+        int height = catalogHeight();
         popup = new PopupWindow(panel, width, height, true);
         popup.setBackgroundDrawable(new ColorDrawable(Color.TRANSPARENT));
         popup.setOutsideTouchable(true);
@@ -171,7 +197,7 @@ final class AppLibraryDialog {
             closed = true;
             dismissActions();
             stopHighlight();
-            icons.clear();
+            art.clear();
             dismissed.run();
         });
     }
@@ -304,29 +330,59 @@ final class AppLibraryDialog {
         catch (RuntimeException unavailable) { return pkg; }
     }
 
-    /** The app's icon from this opening's cache, or loaded on LOADER and set once it arrives. */
-    private void bindIcon(ImageView icon, ResolveInfo app) {
+    /**
+     * The app's artwork, {banner, icon, card fill}, from this opening's cache, or loaded on LOADER and shown once it
+     * arrives; null until then. Only Home tiles load a banner, as Home does (app_banners first, none with
+     * uniform_tiles); the icon only without one, and with uniform_tiles the card fill Home samples from it.
+     */
+    private void bindArt(View view, ResolveInfo app, Consumer<Drawable[]> show) {
         String pkg = app.activityInfo.packageName;
-        icon.setTag(pkg);
-        Drawable cached = icons.get(pkg);
-        icon.setImageDrawable(cached);
-        if (cached != null || !iconsLoading.add(pkg)) return;
+        view.setTag(pkg);
+        Drawable[] cached = art.get(pkg);
+        show.accept(cached);
+        if (cached != null || !artLoading.add(pkg)) return;
         PackageManager pm = activity.getPackageManager();
         LOADER.execute(() -> {
-            Drawable loaded;
-            try { loaded = app.loadIcon(pm); }
-            catch (RuntimeException unavailable) { loaded = null; }
-            Drawable result = loaded;
+            Drawable banner = null;
+            if (homeTiles && !uniformTiles) {
+                banner = AppAdapter.bundledBanner(activity, appBanners.get(pkg));
+                if (banner == null) banner = AppAdapter.loadBanner(activity, pm, app);
+            }
+            Drawable icon = null;
+            if (banner == null) {
+                try { icon = app.loadIcon(pm); }
+                catch (RuntimeException unavailable) { icon = null; }
+                if (icon == null) icon = activity.getDrawable(R.drawable.ic_apps);
+            }
+            Drawable fill = homeTiles && uniformTiles ? new GradientDrawable(GradientDrawable.Orientation.TOP_BOTTOM,
+                    AppAdapter.uniformBackdrop(icon)) : null;
+            Drawable[] loaded = {banner, icon, fill};
             main.post(() -> {
-                iconsLoading.remove(pkg);
+                artLoading.remove(pkg);
                 if (closed) return;
-                Drawable shown = result != null ? result : activity.getDrawable(R.drawable.ic_apps);
-                icons.put(pkg, shown);
+                art.put(pkg, loaded);
                 // The view may show another app by now; a view bound to it later takes it from the cache.
-                if (pkg.equals(icon.getTag())) icon.setImageDrawable(shown);
+                if (pkg.equals(view.getTag())) show.accept(loaded);
             });
         });
     }
+
+    /**
+     * As on Home: a banner fills the tile, with no card fill under an opaque one; without one, the icon and name, or
+     * with uniform_tiles the icon alone on its tinted card.
+     */
+    private void showArt(AppAdapter.Holder tile, Drawable[] art) {
+        Drawable banner = art == null ? null : art[0];
+        if (art != null && art[2] != null) tile.card.setBackground(art[2]);
+        else tile.card.setBackground(banner != null && banner.getOpacity() == PixelFormat.OPAQUE ? null : tile.cardBackground);
+        tile.banner.setImageDrawable(banner);
+        tile.banner.setVisibility(banner != null ? View.VISIBLE : View.GONE);
+        tile.icon.setImageDrawable(art == null ? null : art[1]);
+        tile.icon.setVisibility(banner == null ? View.VISIBLE : View.GONE);
+        tile.label.setVisibility(banner == null && !uniformTiles ? View.VISIBLE : View.GONE);
+    }
+
+    private int catalogHeight() { return dp(homeTiles ? 244 : 280); }
 
     private void heading(String text) {
         TextView title = text(text, 18, 0xFFFFFFFF);
@@ -345,7 +401,7 @@ final class AppLibraryDialog {
 
     private void showCatalog() {
         stopHighlight();
-        resize(catalogWidth, dp(280));
+        resize(catalogWidth, catalogHeight());
         panel.removeAllViews();
         LinearLayout header = new LinearLayout(activity);
         header.setGravity(Gravity.CENTER_VERTICAL);
@@ -364,7 +420,7 @@ final class AppLibraryDialog {
         instructions.setSingleLine(true);
         instructions.setEllipsize(TextUtils.TruncateAt.END);
         instructions.setPadding(dp(12), 0, dp(12), dp(6));
-        panel.addView(instructions, new LinearLayout.LayoutParams(-1, dp(26)));
+        panel.addView(instructions, new LinearLayout.LayoutParams(-1, homeTiles ? -2 : dp(26)));
         panel.setFocusableInTouchMode(apps.isEmpty());
         if (apps.isEmpty()) {
             instructions.setVisibility(View.GONE);
@@ -386,7 +442,13 @@ final class AppLibraryDialog {
         list.setItemAnimator(null);
         list.setOverScrollMode(View.OVER_SCROLL_NEVER);
         list.setClipToPadding(false);
-        list.setPadding(dp(10), dp(8), dp(10), dp(8));
+        if (homeTiles) {
+            // Room at both ends for the zoomed tile and its glass, which the panel clips to its padding.
+            list.setClipChildren(false);
+            list.setPadding(dp(12), dp(6), dp(12), 0);
+        } else {
+            list.setPadding(dp(10), dp(8), dp(10), dp(8));
+        }
         list.setAdapter(new Catalog());
         shelf.addView(list, new FrameLayout.LayoutParams(-1, -1));
         highlight = new GlassView(activity, null);
@@ -593,8 +655,22 @@ final class AppLibraryDialog {
 
     private int dp(int value) { return Math.round(value * density); }
 
-    private final class Catalog extends RecyclerView.Adapter<Row> {
-        @NonNull @Override public Row onCreateViewHolder(@NonNull ViewGroup parent, int type) {
+    private final class Catalog extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
+        @NonNull @Override public RecyclerView.ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int type) {
+            RecyclerView.ViewHolder holder = homeTiles ? tile(parent) : row();
+            View card = card(holder);
+            if (!homeTiles) card.setOnFocusChangeListener((v, focused) -> focused(holder, v, focused));
+            card.setOnKeyListener((v, key, event) -> {
+                int index = holder.getBindingAdapterPosition();
+                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_UP
+                        || key == KeyEvent.KEYCODE_DPAD_DOWN
+                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
+                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
+            });
+            return holder;
+        }
+
+        private Row row() {
             FrameLayout row = new FrameLayout(activity);
             RecyclerView.LayoutParams params = new RecyclerView.LayoutParams(dp(132), dp(170));
             params.setMargins(dp(6), dp(2), dp(6), dp(2));
@@ -629,47 +705,85 @@ final class AppLibraryDialog {
             row.addView(check, badge);
             return new Row(row);
         }
-        @Override public void onBindViewHolder(@NonNull Row holder, int position) {
+
+        /** Home's tile, with a badge in its corner for an app on Home or newly installed. */
+        private AppAdapter.Holder tile(ViewGroup parent) {
+            View view = LayoutInflater.from(activity).inflate(R.layout.item_app, parent, false);
+            view.setLayoutParams(new RecyclerView.LayoutParams(dp(192), ViewGroup.LayoutParams.WRAP_CONTENT));
+            AppAdapter.Holder tile = new AppAdapter.Holder(view, null, animations, advancedEffects, reducedMotion, 1f, focusOvershoot);
+            if (uniformTiles) {
+                // As Home's onCreateViewHolder: a large centred mark, no caption inside the card.
+                FrameLayout.LayoutParams iconLp = (FrameLayout.LayoutParams) tile.icon.getLayoutParams();
+                iconLp.width = iconLp.height = Math.round(tile.card.getLayoutParams().height * AppAdapter.ICON_SHARE);
+                iconLp.bottomMargin = 0;
+            }
+            ImageView badge = new ImageView(activity);
+            badge.setId(R.id.dot);
+            badge.setScaleType(ImageView.ScaleType.CENTER);
+            FrameLayout.LayoutParams params = new FrameLayout.LayoutParams(dp(18), dp(18), Gravity.TOP | Gravity.END);
+            params.setMargins(0, dp(6), dp(6), 0);
+            ((FrameLayout) tile.card).addView(badge, params);
+            // The Holder zooms the tile and shows its name; the glass and the hint follow the focus here.
+            View.OnFocusChangeListener zoom = tile.card.getOnFocusChangeListener();
+            tile.card.setOnFocusChangeListener((v, focused) -> {
+                zoom.onFocusChange(v, focused);
+                focused(tile, v, focused);
+            });
+            return tile;
+        }
+
+        private View card(RecyclerView.ViewHolder holder) {
+            return holder instanceof AppAdapter.Holder ? ((AppAdapter.Holder) holder).card : holder.itemView;
+        }
+
+        private void focused(RecyclerView.ViewHolder holder, View v, boolean focused) {
+            int index = holder.getBindingAdapterPosition();
+            if (!focused || index == RecyclerView.NO_POSITION) return;
+            selectedPosition = index;
+            selectedPackage = apps.get(index).activityInfo.packageName;
+            instructions.setText(hint(onHome.test(selectedPackage)));
+            v.post(() -> { if (v.hasFocus() && catalog != null) highlight(v, true); });
+        }
+
+        @Override public void onBindViewHolder(@NonNull RecyclerView.ViewHolder holder, int position) {
             ResolveInfo app = apps.get(position);
             String pkg = app.activityInfo.packageName;
-            bindIcon(holder.itemView.findViewById(R.id.icon), app);
-            TextView name = holder.itemView.findViewById(R.id.title);
-            name.setText(label(app));
-            name.setEllipsize(TextUtils.TruncateAt.END);
-            TextView status = holder.itemView.findViewById(R.id.status);
             boolean home = onHome.test(pkg);
             boolean recent = !selectionMode && LibraryApps.recent(installTimes.getOrDefault(pkg, 0L), catalogTime);
-            status.setText(home ? R.string.library_on_home : recent ? R.string.library_recent : R.string.library_add_home);
-            status.setVisibility(home || !okOpens ? View.VISIBLE : View.INVISIBLE);
-            holder.itemView.setBackground(surface(home ? 0x1475BBA4 : 0x0CFFFFFF, 18));
-            View check = holder.itemView.findViewById(R.id.dot);
-            check.getLayoutParams().width = dp(home ? 18 : 8);
-            check.getLayoutParams().height = dp(home ? 18 : 8);
-            if (home) check.setBackgroundResource(R.drawable.library_check);
-            else check.setBackground(surface(0xFF70D9A0, 8));
-            check.setVisibility(home || recent ? View.VISIBLE : View.GONE);
-            holder.itemView.setOnClickListener(v -> {
+            if (holder instanceof AppAdapter.Holder) {
+                AppAdapter.Holder tile = (AppAdapter.Holder) holder;
+                String name = label(app);
+                tile.name.setText(name);
+                tile.name.setAlpha(1f);   // item_app.xml hides it until focus; the library always names its tiles
+                tile.label.setText(name);
+                bindArt(tile.card, app, loaded -> showArt(tile, loaded));
+                ImageView badge = tile.card.findViewById(R.id.dot);
+                badge.setImageResource(home ? R.drawable.library_check : R.drawable.library_dot);
+                badge.setVisibility(home || recent ? View.VISIBLE : View.GONE);
+            } else {
+                ImageView icon = holder.itemView.findViewById(R.id.icon);
+                bindArt(icon, app, loaded -> icon.setImageDrawable(loaded == null ? null : loaded[1]));
+                TextView name = holder.itemView.findViewById(R.id.title);
+                name.setText(label(app));
+                name.setEllipsize(TextUtils.TruncateAt.END);
+                TextView status = holder.itemView.findViewById(R.id.status);
+                status.setText(home ? R.string.library_on_home : recent ? R.string.library_recent : R.string.library_add_home);
+                status.setVisibility(home || !okOpens ? View.VISIBLE : View.INVISIBLE);
+                holder.itemView.setBackground(surface(home ? 0x1475BBA4 : 0x0CFFFFFF, 18));
+                View check = holder.itemView.findViewById(R.id.dot);
+                check.getLayoutParams().width = dp(home ? 18 : 8);
+                check.getLayoutParams().height = dp(home ? 18 : 8);
+                if (home) check.setBackgroundResource(R.drawable.library_check);
+                else check.setBackground(surface(0xFF70D9A0, 8));
+                check.setVisibility(home || recent ? View.VISIBLE : View.GONE);
+            }
+            View card = card(holder);
+            card.setOnClickListener(v -> {
                 boolean onHomeNow = onHome.test(pkg);
                 if (LibraryApps.okOpens(selectionMode, okOpens, onHomeNow)) open(app);
                 else changeHome(app, !onHomeNow);
             });
-            holder.itemView.setOnLongClickListener(selectionMode ? null : v -> { showActions(app, v); return true; });
-            holder.itemView.setOnFocusChangeListener((v, focused) -> {
-                if (focused) {
-                    selectedPackage = pkg;
-                    instructions.setText(hint(onHome.test(pkg)));
-                    v.post(() -> { if (v.hasFocus() && catalog != null) highlight(v, true); });
-                    int index = holder.getBindingAdapterPosition();
-                    if (index != RecyclerView.NO_POSITION) selectedPosition = index;
-                }
-            });
-            holder.itemView.setOnKeyListener((v, key, event) -> {
-                int index = holder.getBindingAdapterPosition();
-                return event.getAction() == KeyEvent.ACTION_DOWN && (key == KeyEvent.KEYCODE_DPAD_UP
-                        || key == KeyEvent.KEYCODE_DPAD_DOWN
-                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_RIGHT : key == KeyEvent.KEYCODE_DPAD_LEFT) && index == 0
-                        || (rtl ? key == KeyEvent.KEYCODE_DPAD_LEFT : key == KeyEvent.KEYCODE_DPAD_RIGHT) && index == apps.size() - 1);
-            });
+            card.setOnLongClickListener(selectionMode ? null : v -> { showActions(app, v); return true; });
         }
         @Override public int getItemCount() { return apps.size(); }
     }

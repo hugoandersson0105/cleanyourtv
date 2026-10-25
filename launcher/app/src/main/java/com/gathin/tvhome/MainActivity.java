@@ -284,6 +284,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private AppLibraryDialog appLibrary;
     private boolean appLibrarySelection;
     private boolean libraryOkOpens;
+    private boolean libraryHomeTiles;
+    private boolean uniformTiles;
+    private Map<String, String> appBanners;
     private boolean libraryFocusPending;
     private RecyclerView.OnScrollListener pendingFocusScroll;
 
@@ -379,6 +382,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         Config cfg = Config.load(this);
         appLibrarySelection = cfg.appLibrarySelection;
         libraryOkOpens = cfg.libraryOkOpens;
+        libraryHomeTiles = cfg.libraryHomeTiles;
+        uniformTiles = cfg.uniformTiles;
+        appBanners = cfg.appBanners;
         // restore_key_services: after a force stop, put back the remote's accessibility helpers that Android took
         // off the list (needs WRITE_SECURE_SETTINGS, granted by build-and-install with RESTORE_KEY_SERVICES=1).
         if (cfg.restoreKeyServices) ServiceRepair.restore(this);
@@ -1570,7 +1576,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (openPopup != null) openPopup.dismiss();
         libraryFocusPending = false;
         libraryFromTopBar = false;
-        appLibrary = new AppLibraryDialog(this, animations, reducedMotion, appLibrarySelection, libraryOkOpens, adapter::containsPackage, () -> reloadApps(false), () -> {
+        appLibrary = new AppLibraryDialog(this, animations, reducedMotion, appLibrarySelection, libraryOkOpens,
+                libraryHomeTiles, uniformTiles, advancedEffects, focusOvershoot, appBanners, adapter::containsPackage, () -> reloadApps(false), () -> {
             appLibrary = null;
             openPopup = null;
             if (libraryFromTopBar) {

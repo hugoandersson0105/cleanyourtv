@@ -340,14 +340,23 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         notifyDataSetChanged();
     }
 
-    /** A banner_* drawable bundled with the launcher, or null for none or a name that is not one. */
     private Drawable bundledBanner(String name) {
+        return bundledBanner(ctx, name);
+    }
+
+    /** A banner_* drawable bundled with the launcher, or null for none or a name that is not one. */
+    static Drawable bundledBanner(Context ctx, String name) {
         if (name == null || !name.startsWith("banner_")) return null;
         int id = ctx.getResources().getIdentifier(name, "drawable", ctx.getPackageName());
         return id != 0 ? ctx.getDrawable(id) : null;
     }
 
     private Drawable loadBanner(PackageManager pm, ResolveInfo ri) {
+        return loadBanner(ctx, pm, ri);
+    }
+
+    /** The app's banner, or null where it has none or only a square one (the app library's tiles use it too). */
+    static Drawable loadBanner(Context ctx, PackageManager pm, ResolveInfo ri) {
         int id = ri.activityInfo.banner;
         if (id == 0) id = ri.activityInfo.applicationInfo.banner;
         Drawable banner = null;
@@ -642,6 +651,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     float focusScale() {
+        return focusScale(animations, advancedEffects);
+    }
+
+    /** How much a focused tile zooms: Holder's focus animation, and the glass that covers it. */
+    static float focusScale(boolean animations, boolean advancedEffects) {
         return !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
     }
 
@@ -656,7 +670,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     }
 
     /** Share of the tile height the icon takes in uniform_tiles mode (onCreateViewHolder). */
-    private static final float ICON_SHARE = 0.62f;
+    static final float ICON_SHARE = 0.62f;
 
     /**
      * The colour covering most of an icon, for a card that should read as that app: a small saturated badge
@@ -694,6 +708,11 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
         if (weight[best] < n * n * 0.03f) return 0xFF6E6E73;   // a monochrome icon, like a grey gear
         float w = weight[best];
         return Color.rgb((int) (sum[best][0] / w), (int) (sum[best][1] / w), (int) (sum[best][2] / w));
+    }
+
+    /** uniform_tiles' fill for an app tile without a card accent, as onBindViewHolder draws it (the library uses it too). */
+    static int[] uniformBackdrop(Drawable icon) {
+        return backdrop(icon, dominantColor(icon));
     }
 
     /**
@@ -901,7 +920,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
                 view.animate().cancel();
                 banner.animate().cancel();
                 name.animate().cancel();
-                float scale = !animations ? 1f : advancedEffects ? 1.12f : 1.10f;
+                float scale = focusScale(animations, advancedEffects);
                 float s = focused ? scale : 1f;
                 if (!animations) {
                     view.setScaleX(1f);

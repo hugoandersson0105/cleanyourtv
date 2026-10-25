@@ -48,5 +48,6 @@ fits the rules; keys from before the rule sit on its wanted list until a screens
 | `dock_band` | <img src="switches/dock_band.jpg" width="320" alt="dock_band on a TV"> |
 | `show_library_pill` | <img src="switches/show_library_pill.jpg" width="320" alt="show_library_pill on a TV"> |
 | `library_ok_opens` | <img src="switches/library_ok_opens.jpg" width="320" alt="library_ok_opens on a TV"> |
+| `library_home_tiles` | <img src="switches/library_home_tiles.jpg" width="320" alt="library_home_tiles on a TV"> |
 | `date_below_clock` | <img src="switches/date_below_clock.jpg" width="320" alt="date_below_clock on a TV"> |
 | `power_on_home` | <img src="switches/power_on_home.jpg" width="320" alt="power_on_home on a TV"> |
