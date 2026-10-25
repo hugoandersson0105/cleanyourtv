@@ -1,0 +1,36 @@
+# tcl 65q7c (product name: smart tv pro), google tv
+# android 14 (sdk 34), build tcl9618-user 14 utt2.250416.001 au02 release-keys
+# tested: reboot, home
+# untested: hdmi input, airplay
+# disables everything in this list below. restore with `tools/tv-adb.sh restore`
+
+# streaming / promo apps
+com.disney.disneyplus
+com.netflix.ninja
+com.netflix.tokenmanager
+com.amazon.amazonvideo.livingroom
+com.crunchyroll.crunchyroid
+com.zattoo.player
+tv.arte.plus7
+de.prosiebensat1digital.seventv
+tv.mopa.ginga
+de.exaring.waipu
+de.swr.avp.ard.tv
+com.zdf.android.mediathek
+
+# google media / promo
+com.google.android.videos
+com.google.android.youtube.tvmusic
+com.google.android.play.games
+com.google.android.apps.mediashell
+
+# tcl extras
+com.tcl.channelplus
+com.tcl.esticker
+com.tcl.ocean.instructions
+com.tcl.repairguide
+com.tcl.exhibit
+com.tcl.factory.view
+com.tcl.usercenter
+com.tcl.logkit
+com.tpa.kb
