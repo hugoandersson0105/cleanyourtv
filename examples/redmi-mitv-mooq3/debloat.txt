@@ -1,0 +1,67 @@
+# Redmi TV (MiTV-MOOQ3) - DRAFT, not yet checked on the TV.
+# Built from examples/xiaomi-mitv-mooq0 and examples/xiaomi-mitv-mooq2 (same croods/MediaTek family).
+# At the TV: confirm each package with `dumpsys package <name>` before disabling, disable in small
+# batches with a screenshot between them; disable.sh skips packages that are not installed.
+#
+# Apply:   TV_HOST=<tv ip> tools/disable.sh examples/redmi-mitv-mooq3/debloat.txt
+# Undo:    TV_HOST=<tv ip> tools/restore.sh examples/redmi-mitv-mooq3/debloat.txt
+#
+# Owner's choices: KEEP Google voice search (com.google.android.katniss) and Chromecast
+# (com.google.android.apps.mediashell). DISABLE Mi Cast/Miracast, USB media player and firmware updates.
+# Streaming apps: dock is YouTube, Netflix, Prime Video, Hotstar, JioCinema; ask before disabling any other.
+#
+# Never disable (from MOOQ0/MOOQ2, re-check on this set):
+#   com.mediatek.tvinput, com.mediatek.wwtv.tvcenter, mitv.service, com.mediatek.tv.service  HDMI/AV/tuner
+#   com.mediatek.hotkey.dispatcher                  remote hotkeys incl. Source
+#   com.xiaomi.android.tvsetup.partnercustomizer    Bluetooth remote pairing
+#   com.mitv.overseaservice                         Netflix button
+#   com.xiaomi.tvqs.overseas, com.xiaomi.mitv.res, com.mediatek.wwtv.setupwizard
+# Never launch mediatek.factorymenu.ui or com.duokan.factorytest - disable only.
+# Before disabling com.mitv.dream / backdrop:
+#   settings put secure screensaver_components com.gathin.tvhome/.ClockDream
+# Stock launcher (com.google.android.tvlauncher) is NOT here: build-and-install.sh disables it after
+# the new launcher is verified as Home. Disable com.duokan.factorytest first (it also claims HOME).
+
+# ---- Batch 1: Xiaomi and Google telemetry ----
+com.miui.tv.analytics
+com.xiaomi.statistic
+com.google.android.tv.bugreportsender
+com.google.android.feedback
+
+# ---- Batch 2: Xiaomi content, ads, recommendations ----
+com.mitv.tvhome.atv                             # PatchWall
+com.mitv.tvhome.michannel
+com.mitv.tvhome.mitvplus                        # Xiaomi TV+
+com.xm.webcontent
+com.xiaomi.floatingframe
+android.autoinstalls.config.xiaomi.amelie
+com.google.android.tvrecommendations
+com.google.android.leanbacklauncher
+com.google.android.leanbacklauncher.recommendations
+
+# ---- Batch 3: background services ----
+com.xiaomi.mitv.tvmanager
+com.xiaomi.amazon.alexa
+com.mitv.gallery
+com.mitv.dream
+com.google.android.backdrop
+
+# ---- Batch 4: preloaded apps and HOME claimants ----
+com.xiaomi.mitv.handbook
+com.mitv.tvlock
+com.xiaomo.tv.milegal
+com.mstar.android.tv.disclaimercustomization
+com.mediatek.wwtv.webview
+fusion.android.tv.demo
+com.xiaomi.mimusic2
+com.google.android.play.games
+com.duokan.factorytest
+mediatek.factorymenu.ui
+
+# ---- Batch 5: by owner's choice ----
+com.mitv.milinkservice                          # Mi Cast
+com.xiaomi.mitv.smartshare
+com.xiaomi.wfdsinkhelperservice                 # Miracast
+com.xiaomi.mitv.mediaexplorer                   # USB media player
+com.mitv.videoplayer
+com.xiaomi.mitv.updateservice                   # firmware updates (security fixes too)
