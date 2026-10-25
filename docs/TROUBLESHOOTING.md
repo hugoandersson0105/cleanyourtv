@@ -85,6 +85,16 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   reconnect: Windscribe has Allow LAN traffic (Preferences > Connection) on its free plan, Proton VPN's
   Allow LAN connections is for paid plans only. Or disconnect the VPN for the session. Turn the option
   off again afterwards if you use public Wi-Fi.
+- **`tools/tv.py` times out after the TV took the connection** (`ADB did not finish the handshake`,
+  `TcpTimeoutException: Reading from <tv ip>:5555 timed out`) and no "Allow USB debugging?" prompt is
+  waiting: another ADB client may be holding the TV, as some firmware's `adbd` serves one client at a
+  time. Stop that client for the session, then run `tools/tv.py --probe` again. The stock `adb` server
+  is one: if `adb devices` lists the TV, run `adb kill-server` first. A
+  [Xiaomi Mi TV 4A, Android 6.0.1](https://github.com/Gathin23/cleanyourtv/issues/1185) timed out
+  whenever that server held a connection to the same port. Home Assistant's Android Debug Bridge
+  integration is another (its Android TV Remote integration does not use ADB): a
+  [TCL 55C61B, Google TV 12](https://github.com/Gathin23/cleanyourtv/issues/1526) owner had to disable
+  it in Home Assistant first, because it was holding the TV's ADB connection.
 - **Windows PowerShell 5.1 adds a byte-order mark** to text piped into a program, which turned the
   first batch command into gibberish. `tv.py` now strips it, and the `.ps1` scripts pipe clean UTF-8.
 - **"Allow USB debugging?" comes back**, or the TV answers `unauthorized` although `adb devices` already
