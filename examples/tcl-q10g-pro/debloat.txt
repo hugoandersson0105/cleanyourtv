@@ -15,30 +15,26 @@
 # reboots:
 #   persist.adb.tcp.port=5555, persist.service.adb.enable=1.
 #
-# Stock launcher: com.tcl.cyberui — the only activity that resolves MAIN+HOME, so never disable it
-# (no HOME handler means a black screen on boot). A third-party launcher cannot be installed here:
-# the refusal is a package verification step, not a parse error (see tcl-ak30a5 for the older
-# Android 9 variant). Any APK declaring android.intent.category.HOME fails with
-# INSTALL_FAILED_VERIFICATION_FAILURE and logs:
-#   OverseasAppConfig: Verifying begin
-#   verifier: fetch signature info from: com.tcl.cyberui
-#   verifier: signature does not match for tcl <pkg>, will not be installed!
-# The gate is com.android.packageinstaller → verifier/InstallStrategyManager → LauncherStrategy,
-# which allows a HOME package only if it is in that strategy's package list, or is signed with
-# com.tcl.cyberui's key and carries <meta-data com.tcl.app.type="com.tcl.ui">. The list is TCL's
-# InstallConfig, readable with `content query --uri content://com.tcl.providers.config/all`
-# (project_id=InstallConfig) and not writable from the shell.
+# Stock launcher: com.tcl.cyberui — initially the only MAIN+HOME handler. Keep it enabled as a
+# fallback. A 2026-10-26 follow-up on this same unit installed CleanYourTV 2.7, selected it as
+# Home and checked an ADB reboot, a power-disconnected cold start and standby/wake. The owner
+# reports CyberUI first appears for about five seconds on cold start before automatic handover;
+# wake returns immediately to CleanYourTV, and the physical Home key quickly returns from apps
+# and signal sources. The earlier conclusion that third-party Home is impossible, and that
+# InstallConfig is not shell-writable, was too strong. Normal ADB installation still fails
+# verification; installation-policy changes
+# are outside this project's procedure. See README.md in this folder for the observed results
+# and their limits. This does not establish that disabling CyberUI is safe.
 #
-# Sideloading is blocked for everything else too, not just launchers. On this unit `adb install`,
-# `pm install`, `pm install-commit` and launching the exported InstallStart activity by hand all
-# end in INSTALL_FAILED_VERIFICATION_FAILURE — including an APK signed by TCL itself, and with
-# `-i com.tcl.appmarket2` spoofing the store as installer. Apps arrive through the TCL app store
-# (com.tcl.appmarket2) or a USB stick via 电视卫士. Don't spend an afternoon on adb install.
+# Ordinary APKs are affected too: plain `adb install` of Moonlight 12.1 still returned
+# INSTALL_FAILED_VERIFICATION_FAILURE in the follow-up. A separate installation succeeded and
+# the app opened, with the original install-policy string restored afterwards. The owner
+# confirms Moonlight appears in the new launcher and works normally; streaming performance
+# was not measured. Store and USB installations were not re-tested in this session.
 #
 # Live TV app: com.tcl.tv — keep it, it owns DTV/HDMI playback and the remote's source key.
 # Kept on purpose:
-#   com.tcl.guard                 电视卫士; on this firmware the USB install path is the remaining
-#                                 way to sideload, so keep it
+#   com.tcl.guard                 电视卫士; retain the vendor USB install channel
 #   com.tcl.appmarket2            TCL app store, the other install channel
 #   com.sohu.inputmethod.sogou.tv the only input method; disable it and there is no keyboard at all
 #   com.tcl.ui_mediaCenter        USB playback; the whole Media Center app goes with it
