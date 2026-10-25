@@ -103,6 +103,15 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
 
 - **Chained `pm` commands** (`pm disable a; pm disable b`) may silently stop after the first. Run
   one per shell call; `--batch` does exactly that.
+- **TCL's software update says "Local network or server abnormal" after the debloat**, while the
+  network works. TCL's updater gets the TV's device number (dnum) from `com.tcl.xian.StartandroidService`,
+  which the lists disable as reporting; without it the check stops with `dnum is null!` in logcat. Enable
+  it, reboot once (it starts at boot), run Settings > About > Software Update > Network Update, then disable
+  it again. Seen on a TCL Smart TV Pro (`G03_4K_US`, Google TV 11, GTV93).
+- **The Google Home panel (lights) is gone from the quick settings** on Google TV. It lives in
+  `com.google.android.apps.tv.dreamx`, the same package as the promo screensaver, and Apps only mode hides it
+  too. Re-enable dreamx and switch Apps only mode off to bring it back; the screensaver can stay on the
+  launcher's clock. Seen on a TCL Smart TV Pro (`G03_4K_US`, Google TV 11, GTV93).
 - **Large pushes hang** through the Python client. Use `tools/b64push.py` for APKs.
 - **`tools/tv.py reboot` never comes back.** `reboot` is a shell command, and adbd stops before it
   sends the shell's last `CLSE`, so the client waits for a reply that cannot arrive: two minutes,
