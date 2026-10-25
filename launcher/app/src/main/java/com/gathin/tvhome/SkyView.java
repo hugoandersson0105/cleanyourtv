@@ -45,6 +45,29 @@ public class SkyView extends View {
     private Bitmap texture;
     private BitmapDrawable drawable;
 
+    /** "landscape" or "night" (LandscapeScene), or null for the plain time-of-day gradient. */
+    private String scene;
+    private LandscapeScene.Kind weather = LandscapeScene.Kind.CLEAR;
+    private double sceneLat = Double.NaN;
+    private double sceneLon = Double.NaN;
+    /** Told whether the sky behind the clock is bright (dark text reads better) after each scene redraw. */
+    public interface BrightnessListener {
+        void onSkyBrightness(boolean bright);
+    }
+
+    @Nullable
+    private BrightnessListener brightnessListener;
+    private Boolean lastBright;
+
+    public void setBrightnessListener(@Nullable BrightnessListener l) {
+        brightnessListener = l;
+        lastBright = null;
+        if (l != null && scene != null && texture != null) reportBrightness();
+    }
+
+    private static final int SCENE_W = 960;
+    private static final int SCENE_H = 540;
+
     public SkyView(Context context, @Nullable AttributeSet attrs) {
         super(context, attrs);
     }
@@ -55,6 +78,31 @@ public class SkyView extends View {
         setAlpha(intensity / 100f);
         setVisibility(intensity == 0 ? GONE : VISIBLE);
         if (intensity > 0) render(true);
+    }
+
+    /**
+     * Shows the landscape instead of the gradient: fully opaque, redrawn when the minute or the weather changes.
+     * {@code lat}/{@code lon} place the real sunrise and sunset (NaN: the launcher's latitude/longitude, or the
+     * reference day).
+     */
+    public void setScene(String name, double lat, double lon) {
+        scene = name;
+        sceneLat = lat;
+        sceneLon = lon;
+        intensity = 100;
+        setAlpha(1f);
+        setVisibility(VISIBLE);
+        texture = null;
+        drawable = null;
+        render(true);
+    }
+
+    /** The current weather as a WMO code (WeatherLine); redraws the scene only when the picture would change. */
+    public void setWeather(int wmoCode) {
+        LandscapeScene.Kind k = LandscapeScene.kindOf(wmoCode);
+        if (k == weather) return;
+        weather = k;
+        if (scene != null) render(true);
     }
 
     /** Picks up a new time of day; cheap and safe to call every minute. */
@@ -72,6 +120,9 @@ public class SkyView extends View {
     /** Today's sunrise and sunset at the configured place, or null without one (fixed reference day). */
     @Nullable
     private int[] sunTimes() {
+        if (!Double.isNaN(sceneLat) && !Double.isNaN(sceneLon)) {
+            return Sun.riseAndSet(LocalDate.now(), sceneLat, sceneLon, ZoneId.systemDefault());
+        }
         String lat = getContext().getString(R.string.latitude);
         String lon = getContext().getString(R.string.longitude);
         if (lat.isEmpty() || lon.isEmpty()) return null;
@@ -89,6 +140,10 @@ public class SkyView extends View {
         if (!force && minute == lastMinute) return;
         lastMinute = minute;
 
+        if (scene != null) {
+            renderScene(minute);
+            return;
+        }
         int[] sun = sunTimes();
         Sky.Palette sky = sun == null ? Sky.at(minute) : Sky.at(minute, sun[0], sun[1]);
         if (texture == null) texture = Bitmap.createBitmap(TEX_W, TEX_H, Bitmap.Config.ARGB_8888);
@@ -114,6 +169,41 @@ public class SkyView extends View {
         if (drawable == null) {
             drawable = new BitmapDrawable(getResources(), texture);
             drawable.setGravity(Gravity.FILL);
+            setBackground(drawable);
+        }
+        invalidate();
+    }
+
+    /** Average luminance where the clock and the date sit (top left), from a coarse grid of texture pixels. */
+    private void reportBrightness() {
+        if (brightnessListener == null || texture == null) return;
+        double sum = 0;
+        int n = 0;
+        for (int y = (int) (SCENE_H * 0.08f); y < SCENE_H * 0.55f; y += 12) {
+            for (int x = (int) (SCENE_W * 0.04f); x < SCENE_W * 0.45f; x += 12) {
+                int c = texture.getPixel(x, y);
+                sum += 0.2126 * ((c >> 16) & 0xFF) + 0.7152 * ((c >> 8) & 0xFF) + 0.0722 * (c & 0xFF);
+                n++;
+            }
+        }
+        boolean bright = n > 0 && sum / n > 150;
+        if (lastBright == null || lastBright != bright) {
+            lastBright = bright;
+            brightnessListener.onSkyBrightness(bright);
+        }
+    }
+
+    private void renderScene(int minute) {
+        int[] sun = sunTimes();
+        if (texture == null) texture = Bitmap.createBitmap(SCENE_W, SCENE_H, Bitmap.Config.ARGB_8888);
+        Canvas canvas = new Canvas(texture);
+        LandscapeScene.draw(canvas, SCENE_W, SCENE_H, minute, sun == null ? -1 : sun[0], sun == null ? -1 : sun[1],
+                "night".equalsIgnoreCase(scene), weather);
+        reportBrightness();
+        if (drawable == null) {
+            drawable = new BitmapDrawable(getResources(), texture);
+            drawable.setGravity(Gravity.FILL);
+            drawable.setFilterBitmap(true);
             setBackground(drawable);
         }
         invalidate();

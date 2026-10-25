@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Arimo (Arial-compatible widths, SIL OFL) at weight 700, built once per process. Arimo's lightest weight is 400,
+     so light and extralight draw at regular weight. -->
+<font-family xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools">
+    <font
+        android:font="@font/arimo"
+        android:fontStyle="normal"
+        android:fontWeight="700"
+        android:fontVariationSettings="'wght' 700"
+        tools:targetApi="28" />
+</font-family>

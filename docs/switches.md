@@ -50,3 +50,14 @@ fits the rules; keys from before the rule sit on its wanted list until a screens
 | `library_ok_opens` | <img src="switches/library_ok_opens.jpg" width="320" alt="library_ok_opens on a TV"> |
 | `date_below_clock` | <img src="switches/date_below_clock.jpg" width="320" alt="date_below_clock on a TV"> |
 | `power_on_home` | <img src="switches/power_on_home.jpg" width="320" alt="power_on_home on a TV"> |
+| `scene` | <img src="../landscape/screenshots/home.jpg" width="320" alt="scene on a TV"> |
+| `clock_style` | <img src="../landscape/screenshots/home.jpg" width="320" alt="clock_style on a TV"> |
+| `clock_size` | <img src="../landscape/screenshots/home.jpg" width="320" alt="clock_size on a TV"> |
+| `weather_city` | <img src="../landscape/screenshots/home.jpg" width="320" alt="weather_city on a TV"> |
+| `weather_latitude` | <img src="../landscape/screenshots/home.jpg" width="320" alt="weather_latitude on a TV"> |
+| `weather_longitude` | <img src="../landscape/screenshots/home.jpg" width="320" alt="weather_longitude on a TV"> |
+| `weather_unit` | <img src="../landscape/screenshots/home.jpg" width="320" alt="weather_unit on a TV"> |
+| `weather_forecast` | <img src="../landscape/screenshots/control-center.jpg" width="320" alt="weather_forecast on a TV"> |
+| `control_center` | <img src="../landscape/screenshots/control-center.jpg" width="320" alt="control_center on a TV"> |
+| `home_dock_only` | <img src="../landscape/screenshots/all-apps.jpg" width="320" alt="home_dock_only on a TV"> |
+| `dock_bottom_dp` | <img src="../landscape/screenshots/home.jpg" width="320" alt="dock_bottom_dp on a TV"> |

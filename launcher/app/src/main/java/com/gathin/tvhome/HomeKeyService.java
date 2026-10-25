@@ -51,6 +51,8 @@ public class HomeKeyService extends AccessibilityService {
     private int[] settingsScancodes = new int[0];
     private int[] settingsKeycodes = new int[0];
     private boolean settingsPanel;
+    /** control_center (SceneConfig): the Settings button toggles this panel over any app; null when off. */
+    private SettingsOverlay controlCenter;
     /** consume_volume_keys: Volume Up/Down go to VolumeKeys instead of on to the firmware. */
     private boolean consumeVolumeKeys;
     /** app_keys, the same maps InputKeyService reads, for setups that run only this service. */
@@ -133,6 +135,7 @@ public class HomeKeyService extends AccessibilityService {
             }
             standbyExit = null;
         }
+        if (controlCenter != null) controlCenter.hide();
         if (gamepads != null) gamepads.stop();
         if (consumeVolumeKeys) VolumeKeys.stop();
         super.onDestroy();
@@ -176,6 +179,13 @@ public class HomeKeyService extends AccessibilityService {
         if (repairRecord) ServiceRepair.connected(this, getClass());
         settingsKeycodes = config.settingsKeycodes;
         settingsPanel = config.settingsKeyPanel;
+        // SceneConfig reads the theme JSON Config.load just left in Config.overlay.
+        if (SceneConfig.load(this).controlCenter) {
+            if (controlCenter == null) controlCenter = new SettingsOverlay(this);
+        } else if (controlCenter != null) {
+            controlCenter.hide();
+            controlCenter = null;
+        }
         consumeVolumeKeys = config.consumeVolumeKeys;
         appKeys = RemoteKeys.parseAppKeys(config.appKeys);
         appScancodes = RemoteKeys.parseAppScancodes(config.appKeys);
@@ -237,6 +247,15 @@ public class HomeKeyService extends AccessibilityService {
         if (RemoteKeys.handle(this, event, appScancodes.get(event.getScanCode()),
                 holdAppScancodes.get(event.getScanCode()))) return true;
         // The stock launcher handled the remote's Settings button; with it disabled the button does nothing.
+        if (isSettingsKey(event) && controlCenter != null) {
+            if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) controlCenter.toggle();
+            return true;
+        }
+        // While the panel is open, Back closes it and does not reach the app underneath.
+        if (controlCenter != null && controlCenter.isShowing() && event.getKeyCode() == KeyEvent.KEYCODE_BACK) {
+            if (event.getAction() == KeyEvent.ACTION_UP) controlCenter.hide();
+            return true;
+        }
         if (isSettingsKey(event)) {
             if (event.getAction() == KeyEvent.ACTION_UP && !event.isCanceled()) {
                 Intent open = settingsPanel ? new Intent(this, QuickSettingsActivity.class)

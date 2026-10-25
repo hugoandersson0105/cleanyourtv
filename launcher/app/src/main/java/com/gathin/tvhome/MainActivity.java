@@ -67,10 +67,12 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.PopupWindow;
+import android.widget.TextClock;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.dynamicanimation.animation.FloatPropertyCompat;
 import androidx.dynamicanimation.animation.SpringAnimation;
 import androidx.dynamicanimation.animation.SpringForce;
@@ -194,6 +196,15 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
     private String greetingName = "";
     /** Optional time-of-day backdrop (config.xml, sky_intensity); 0 keeps it hidden. */
     private SkyView sky;
+    /** Landscape, large clock and weather options (SceneConfig); weatherLine is null with no weather location. */
+    private SceneConfig sceneCfg;
+    @Nullable
+    private WeatherLine weatherLine;
+    /** The weather lines (applyLargeClock) and the hint above the dock (home_dock_only), recoloured with the sky. */
+    @Nullable
+    private TextView weatherNow, weatherForecast, allAppsHint;
+    private final int[] hintLoc = new int[2];
+    private final int[] rootLoc = new int[2];
     private String vpnApp;
     private SpringAnimation springX, springY;
     private float glassTargetX, glassTargetY;
@@ -365,6 +376,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // signal level, so only it needs this minute's binder calls (about 7 ms on the UI thread).
             if (festive) updateWifiLabel();
             sky.update();
+            if (weatherLine != null) weatherLine.tick();
             wallpaperPlayer.update();
             handler.postDelayed(this, MINUTE_MS);
         }
@@ -419,6 +431,11 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         wallpaperPlayer = new WallpaperPlayer(this, root, cfg);
         sky = findViewById(R.id.sky);
         sky.setIntensity(cfg.skyIntensity);
+        sceneCfg = SceneConfig.load(this);
+        if (!sceneCfg.scene.isEmpty()) {
+            sky.setScene(sceneCfg.scene, sceneCfg.weatherOn ? sceneCfg.latitude : Double.NaN,
+                    sceneCfg.weatherOn ? sceneCfg.longitude : Double.NaN);
+        }
         glass = findViewById(R.id.glass);
         glass.setStyle(cfg.glassStyle);
         if (festive) glass.setAccent(festival.accentColor());
@@ -487,6 +504,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (lunar) lunarDate.setVisibility(View.VISIBLE);
         greetingName = cfg.greetingName;
         if (cfg.dateBelowClock) moveDateBelowClock();
+        applyLargeClock(cfg.dateBelowClock);
+        // Under a bright day sky the white header washes out: switch it to dark ink while the sky is bright.
+        if (!sceneCfg.scene.isEmpty()) sky.setBrightnessListener(this::applyHeaderInk);
         if (shamsi) {
             shamsiDate.setVisibility(View.VISIBLE);
             TextView date = findViewById(R.id.date);
@@ -580,6 +600,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
                     AnimationUtils.loadAnimation(this, R.anim.tile_enter), 0.06f));
         }
         adapter = new AppAdapter(this, this, COLUMNS, cfg);
+        adapter.setHomeDockOnly(sceneCfg.homeDockOnly);
+        setUpAllAppsHint();
         dockApps = cfg.dockApps;
         fillDockLeavesSlots = !cfg.fillDock;
         Order savedOrder = Order.load(Order.file(this));
@@ -600,7 +622,8 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             // Keep the hero below the header when the library is enabled on a short screen,
             // even when the theme requests an extra visible row below the dock.
             int shelfClearance = cfg.appLibrary ? hero.getMeasuredHeight() + (int) (40 * density) : 0;
-            int want = Math.max(shelfClearance, h - dockRow - gridRows - (int) (AppAdapter.BOTTOM_ROOM_DP * density));
+            float bottomDp = sceneCfg.dockBottomDp >= 0 ? sceneCfg.dockBottomDp : AppAdapter.BOTTOM_ROOM_DP;
+            int want = Math.max(shelfClearance, h - dockRow - gridRows - (int) (bottomDp * density));
             // Where the rows cannot fit even at the smallest tile (3 rows with the title on), the title keeps its
             // room above the dock and the last rows run off the bottom instead of the title drawing over the clock.
             if (MainActivity.this.dockRow && cfg.dockTitle && rowsBelowDock > 0) want = Math.max(want, (int) (AppAdapter.TITLE_ROOM_DP * density));
@@ -960,6 +983,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
         if (showStats) startStats();
         sky.update();
+        if (weatherLine != null) weatherLine.start();
         wallpaperPlayer.start();
         handler.postDelayed(minuteTick, MINUTE_MS);
         if (festive && diya != null) {
@@ -1135,6 +1159,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         ambient.animate().cancel();
         heroArt.animate().cancel();
         handler.removeCallbacks(minuteTick);
+        if (weatherLine != null) weatherLine.stop();
         stopStats();
         if (diya != null) diya.stop();
         cancelPendingFocusScroll();
@@ -2234,6 +2259,9 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         if (keyCode == KeyEvent.KEYCODE_DPAD_UP) {
             if (position < COLUMNS) return false;          // dock row: let focus move to the top bar
             target = position - COLUMNS;
+        } else if (sceneCfg.homeDockOnly && position < COLUMNS) {
+            openAllApps();
+            return true;
         } else {
             int lastRowStart = ((count - 1) / COLUMNS) * COLUMNS;
             if (position >= lastRowStart) {
@@ -2259,6 +2287,128 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
      * date_below_clock: the date column moves to its own line under the clock, in the vertical LinearLayout that holds
      * the clock's row, and the line between them goes. In Hebrew (rtl_menu_bar) the date and the clock's row sit right.
      */
+    /** Dark ink on a bright sky, the usual whites on a dark one. The top pills keep their own glass. */
+    private void applyHeaderInk(boolean bright) {
+        int ink = 0x14202E;
+        ((TextView) findViewById(R.id.clock)).setTextColor(bright ? 0xFF000000 | ink : 0xFFFFFFFF);
+        ((TextView) findViewById(R.id.ampm)).setTextColor(bright ? 0xB3000000 | ink : 0xB3FFFFFF);
+        ((TextView) findViewById(R.id.date)).setTextColor(bright ? 0xE6000000 | ink : 0xEBFFFFFF);
+        greeting.setTextColor(bright ? 0xB3000000 | ink : greetingColor);
+        if (weatherNow != null) weatherNow.setTextColor(bright ? 0xE0000000 | ink : 0xD9FFFFFF);
+        if (weatherForecast != null) weatherForecast.setTextColor(bright ? 0xB8000000 | ink : 0x99FFFFFF);
+        if (allAppsHint != null) {
+            int c = bright ? 0xD9000000 | ink : 0xCCFFFFFF;
+            allAppsHint.setTextColor(c);
+            allAppsHint.setCompoundDrawableTintList(ColorStateList.valueOf(c));
+        }
+    }
+
+    /** home_dock_only: a small "All apps" hint just above the first dock tile; Down from the dock opens the page. */
+    private void setUpAllAppsHint() {
+        if (!sceneCfg.homeDockOnly) return;
+        TextView hint = new TextView(this);
+        hint.setText(R.string.all_apps_hint);
+        hint.setTextSize(15f);
+        hint.setTypeface(getResources().getFont(R.font.arimo_regular));
+        hint.setTextColor(0xCCFFFFFF);
+        Drawable chevron = getDrawable(R.drawable.ic_chevron_down);
+        hint.setCompoundDrawablesWithIntrinsicBounds(chevron, null, null, null);
+        hint.setCompoundDrawablePadding(Math.round(6 * density));
+        hint.setCompoundDrawableTintList(ColorStateList.valueOf(0xCCFFFFFF));
+        hint.setGravity(Gravity.CENTER_VERTICAL);
+        hint.setAlpha(0f);
+        hint.setFocusable(false);
+        hint.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        root.addView(hint, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT));
+        allAppsHint = hint;
+        grid.getViewTreeObserver().addOnGlobalLayoutListener(this::placeAllAppsHint);
+        // The sky reported its brightness before the hint existed: ask again so the hint gets the same ink.
+        if (!sceneCfg.scene.isEmpty()) sky.setBrightnessListener(this::applyHeaderInk);
+    }
+
+    /** Lines the hint up with the first dock tile's unscaled left edge, a little above its top. */
+    private void placeAllAppsHint() {
+        if (allAppsHint == null || adapter == null) return;
+        RecyclerView.ViewHolder vh = grid.findViewHolderForAdapterPosition(0);
+        View card = vh == null ? null : vh.itemView.findViewById(R.id.card);
+        if (card == null || card.getHeight() == 0 || allAppsHint.getHeight() == 0) return;
+        vh.itemView.getLocationInWindow(hintLoc);
+        root.getLocationInWindow(rootLoc);
+        float x = hintLoc[0] - rootLoc[0] + card.getLeft();
+        float y = hintLoc[1] - rootLoc[1] + card.getTop() - allAppsHint.getHeight() - 8 * density;
+        if (allAppsHint.getX() != x) allAppsHint.setX(x);
+        if (allAppsHint.getY() != y) allAppsHint.setY(y);
+        if (allAppsHint.getAlpha() == 0f) allAppsHint.animate().alpha(1f).setDuration(200).start();
+    }
+
+    private void openAllApps() {
+        try {
+            startActivity(new Intent(this, AllAppsActivity.class));
+            overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+        } catch (ActivityNotFoundException e) {
+            Toast.makeText(this, R.string.not_available, Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void applyLargeClock(boolean dateAlreadyBelow) {
+        TextView clock = findViewById(R.id.clock);
+        if (sceneCfg.clockSize > 0) {
+            clock.setTextSize(sceneCfg.clockSize);
+            ((TextView) findViewById(R.id.ampm)).setTextSize(Math.max(15f, sceneCfg.clockSize * 0.22f));
+        }
+        TextView date = findViewById(R.id.date);
+        if (sceneCfg.largeClock) {
+            if (!dateAlreadyBelow) moveDateBelowClock();
+            // The pills normally sit level with the bottom of the header; under a tall clock that is mid-screen.
+            // Pin them to the top right, level with the top of the digits.
+            View pills = findViewById(R.id.topButtons);
+            RelativeLayout.LayoutParams plp = (RelativeLayout.LayoutParams) pills.getLayoutParams();
+            plp.removeRule(RelativeLayout.ALIGN_BOTTOM);
+            plp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
+            plp.topMargin = Math.round(18 * density);
+            pills.setLayoutParams(plp);
+            date.setAllCaps(false);
+            date.setLetterSpacing(0.01f);
+            date.setTextSize(24f);
+            date.setTextColor(0xEBFFFFFF);
+            ((TextClock) date).setFormat12Hour("EEEE, d MMMM");
+            ((TextClock) date).setFormat24Hour("EEEE, d MMMM");
+        }
+        if (!sceneCfg.weatherOn) return;
+        LinearLayout column = (LinearLayout) date.getParent();
+        TextView now = new TextView(this);
+        now.setTextSize(18f);
+        now.setTextColor(0xD9FFFFFF);
+        now.setTypeface(getResources().getFont(R.font.arimo_regular));
+        now.setSingleLine(true);
+        now.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        now.setGravity(Gravity.LEFT);
+        now.setText(" ");
+        now.setVisibility(View.INVISIBLE);   // the space is kept from the start, see WeatherLine
+        TextView forecast = new TextView(this);
+        forecast.setTextSize(14f);
+        forecast.setTextColor(0x99FFFFFF);
+        forecast.setTypeface(getResources().getFont(R.font.arimo_regular));
+        forecast.setLineSpacing(5 * density, 1f);
+        forecast.setGravity(Gravity.LEFT);
+        forecast.setText(" \n ");
+        forecast.setVisibility(View.INVISIBLE);
+        int at = column.indexOfChild(date) + 1;
+        LinearLayout.LayoutParams nowLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        nowLp.topMargin = Math.round(10 * density);
+        column.addView(now, at, nowLp);
+        LinearLayout.LayoutParams fcLp = new LinearLayout.LayoutParams(
+                ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        fcLp.topMargin = Math.round(6 * density);
+        if (sceneCfg.showForecast) column.addView(forecast, at + 1, fcLp);
+        else forecast = null;
+        weatherNow = now;
+        weatherForecast = forecast;
+        weatherLine = new WeatherLine(this, now, forecast, sceneCfg, sky::setWeather);
+    }
+
     private void moveDateBelowClock() {
         View column = (View) findViewById(R.id.date).getParent();
         View clockRow = (View) findViewById(R.id.clock).getParent();
@@ -2822,6 +2972,35 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
         }
     }
 
+    /**
+     * input_extra (SceneConfig): rows for pages that sit beside the inputs without being one, such as AirPlay or
+     * screen mirroring. "Label=package/activity" or "Label=package#action"; a target that does not resolve (not
+     * installed, disabled) gets no row.
+     */
+    private void addExtraInputRows(LinearLayout rows, PopupWindow popup) {
+        boolean first = true;
+        for (String entry : sceneCfg.inputExtra) {
+            int eq = entry.indexOf('=');
+            if (eq <= 0) continue;
+            String label = entry.substring(0, eq).trim();
+            String target = entry.substring(eq + 1).trim();
+            Intent intent;
+            int hash = target.indexOf('#');
+            if (hash > 0) {
+                intent = new Intent(target.substring(hash + 1)).setPackage(target.substring(0, hash));
+            } else {
+                ComponentName cn = ComponentName.unflattenFromString(target);
+                if (cn == null) continue;
+                intent = new Intent(Intent.ACTION_MAIN).setComponent(cn);
+            }
+            if (intent.resolveActivity(getPackageManager()) == null) continue;
+            if (first && rows.getChildCount() > 0) addSeparator(rows);
+            first = false;
+            final Intent go = intent;
+            addInputRow(rows, popup, R.drawable.ic_cast, label, -1, () -> open(go));
+        }
+    }
+
     private void open(Intent i) {
         i.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         try {
@@ -3063,6 +3242,7 @@ public class MainActivity extends Activity implements AppAdapter.TileListener {
             final Intent liveTvIntent = liveTv;
             addInputRow(rows, popup, R.drawable.ic_livetv, getString(R.string.live_tv), -1, () -> open(liveTvIntent));
         }
+        addExtraInputRows(rows, popup);
         if (rows.getChildCount() == 0) {
             Toast.makeText(this, R.string.no_inputs, Toast.LENGTH_SHORT).show();
             return;

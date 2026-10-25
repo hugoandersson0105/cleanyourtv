@@ -142,6 +142,18 @@ A new key needs one there in the same pull request.
 | `ambient_glow` | bool | The glow behind the dock in the focused app's colour (`true` by default); `false` keeps only `background_color` or the wallpaper, e.g. for a calm photo background |
 | `app_glow` | bool | The focus highlight glows in the focused app's colour on every tile, as `cinematic_home` does for the dock (`false` by default) |
 | `fade_rows` | bool | The rows fade out as they scroll up under the clock instead of being cut off at a hard line; the wallpaper or sky shows through. The grid then draws into a hardware layer (about 6 MB of graphics memory at 1080p) (`false` by default) |
+| `scene` | string | Fork only (see `landscape/`). A drawn landscape behind Home: `landscape` follows the time of day and the current weather, `night` keeps night all day; empty (default) keeps the plain background. Redrawn once a minute, never animated |
+| `clock_style` | string | Fork only. `large` puts the date on its own line under the clock, with the weather line under it; empty (default) keeps the header as it was |
+| `clock_size` | int | Fork only. Clock text size in sp; `0` (default) keeps the built-in size |
+| `weather_city` | string | Fork only. The label before the temperature on the weather line; empty hides it |
+| `weather_latitude` | string | Fork only. Latitude sent to Open-Meteo every 30 minutes while Home is on screen; empty (default) with `weather_longitude` empty means no weather and no network at all |
+| `weather_longitude` | string | Fork only. Longitude for the weather, as above |
+| `weather_unit` | string | Fork only. `c` (default) or `f` |
+| `weather_forecast` | bool | Fork only. The next hours and days under the weather line (`true` by default once weather is on) |
+| `control_center` | bool | Fork only. The remote's Settings button opens the Control Center panel over any app instead of TV Settings (`false` by default; needs the Home key helper) |
+| `home_dock_only` | bool | Fork only. Home shows the dock apps only; Down from the dock opens All apps (`false` by default) |
+| `dock_bottom_dp` | int | Fork only. Gap under the dock in dp; `-1` (default) keeps 30 |
+| `input_extra` | list | Fork only. Extra rows at the end of the Inputs menu, `"Label=package/activity"` or `"Label=package#action"`; a row whose target is missing is left out |
 
 ## Wallpapers
 

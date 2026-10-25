@@ -1,0 +1,31 @@
+{
+  "dock_apps": [
+    "com.google.android.youtube.tv",
+    "com.crunchyroll.crunchyroid",
+    "com.netflix.ninja",
+    "com.amazon.amazonvideo.livingroom",
+    "in.startv.hotstar",
+    "com.apple.atve.androidtv.appletv"
+  ],
+  "columns": 6,
+  "rows_below_dock": 0,
+  "home_dock_only": true,
+  "dock_bottom_dp": 6,
+  "background_color": "#000000",
+  "wallpaper": false,
+  "show_greeting": false,
+  "show_library_pill": false,
+  "dock_band": false,
+  "dock_title": false,
+  "ambient_glow": false,
+  "scene": "landscape",
+  "clock_style": "large",
+  "clock_size": 130,
+  "weather_city": "",
+  "weather_latitude": "",
+  "weather_longitude": "",
+  "weather_unit": "c",
+  "weather_forecast": false,
+  "control_center": true,
+  "settings_key_keycodes": [83]
+}

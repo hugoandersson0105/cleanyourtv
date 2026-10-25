@@ -201,6 +201,12 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
     private final boolean animations;
     private final boolean advancedEffects;
     private final boolean showLibrary;
+    /** home_dock_only (SceneConfig): Home keeps only the dock apps and the ones added from the library. */
+    private boolean homeDockOnly;
+
+    void setHomeDockOnly(boolean only) {
+        homeDockOnly = only;
+    }
     /** Packages with a leanback entry at the last reload(): their tiles launch with the leanback category. */
     private Set<String> leanbackPackages = new HashSet<>();
     private final boolean showHomeSettings;
@@ -283,6 +289,7 @@ public class AppAdapter extends RecyclerView.Adapter<RecyclerView.ViewHolder> {
             String pkg = ri.activityInfo.packageName;
             if (pkg.equals(ctx.getPackageName()) || !ri.activityInfo.exported
                     || !LibraryApps.visible(tvPackages.contains(pkg), hidden.contains(pkg), added.contains(pkg), removed.contains(pkg))) continue;
+            if (homeDockOnly && !favourites.contains(pkg) && !added.contains(pkg)) continue;
             ComponentName component = new ComponentName(pkg, ri.activityInfo.name);
             Cards.Card card = cardByPkg.get(pkg);
             if (card != null && !card.component.equals(component)) continue;   // the card stands in for this tile

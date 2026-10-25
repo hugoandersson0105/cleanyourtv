@@ -145,4 +145,36 @@
     <string name="race_countdown_hours">%1$d שע׳ %2$d דק׳</string>
     <string name="race_countdown_days">%1$d ימ׳ %2$d שע׳</string>
     <string name="last_opened">פתיחה אחרונה: %1$s</string>
+    <!-- Landscape fork: All apps page and Control Center. -->
+    <string name="all_apps_hint">כל האפליקציות</string>
+    <string name="all_apps_title">אפליקציות</string>
+    <string name="back_to_clock">חזרה לשעון</string>
+    <string name="panel_bt_battery">%1$d%%</string>
+    <string name="panel_bt_connected">מחובר</string>
+    <string name="panel_footer">%1$s · Android %2$s</string>
+    <string name="panel_free_short">%1$s פנויים</string>
+    <string name="panel_link">קישור %1$d Mbps · %2$d dBm</string>
+    <string name="panel_link_unknown">מהירות הקישור לא ידועה</string>
+    <string name="panel_memory_short">זיכרון</string>
+    <string name="panel_no_traffic">נתוני שימוש לא זמינים ברשת הזו</string>
+    <string name="panel_offline">לא מחובר</string>
+    <string name="panel_signal_dbm">%1$d dBm</string>
+    <string name="panel_signal_excellent">אות מצוין</string>
+    <string name="panel_signal_fair">אות סביר</string>
+    <string name="panel_signal_good">אות טוב</string>
+    <string name="panel_signal_weak">אות חלש</string>
+    <string name="panel_speed_down">↓ %1$s/s</string>
+    <string name="panel_speed_up">↑ %1$s/s</string>
+    <string name="panel_storage_short">אחסון</string>
+    <string name="panel_tile_accessibility">נגישות</string>
+    <string name="panel_tile_all">כל ההגדרות</string>
+    <string name="panel_tile_apps">אפליקציות</string>
+    <string name="panel_tile_display">תצוגה</string>
+    <string name="panel_tile_sound">צליל</string>
+    <string name="panel_usage_today">היום ↓ %1$s  ↑ %2$s</string>
+    <string name="side_network">רשת ואינטרנט</string>
+    <string name="panel_bluetooth">Bluetooth</string>
+    <string name="panel_no_notifications">אין התראות</string>
+    <string name="panel_notifications">התראות</string>
+    <string name="notifications_name">גישה להתראות</string>
 </resources>

@@ -37,6 +37,9 @@ import java.util.Set;
  */
 final class Config {
     private static final String TAG = "TvHome.Config";
+
+    /** The theme's config.json as last read by load(), or null; SceneConfig reads its own keys from it. */
+    static JSONObject overlay;
     static final String FILE_NAME = "config.json";
     static final String WALLPAPER_NAME = "wallpaper.jpg";
     static final String SETTINGS_NAME = "launcher_settings";
@@ -481,6 +484,7 @@ final class Config {
         File file = dir != null ? new File(dir, FILE_NAME) : null;
         boolean mounted = Environment.MEDIA_MOUNTED.equals(Environment.getExternalStorageState());
         JSONObject json = readOverlay(ctx, file, mounted);
+        overlay = json;
         if (json != null) {
             applied = true;
             dock = stringList(json, "dock_apps", dock);

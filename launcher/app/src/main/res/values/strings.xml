@@ -149,4 +149,36 @@
     <!-- Cinematic top shelf (cinematic_home): the line under the focused dock app's name; %1$s is when it was
          last opened, e.g. "5 minutes ago" or "yesterday, 9:40 pm". -->
     <string name="last_opened">Last opened %1$s</string>
+    <string name="all_apps_hint">All apps</string>
+    <string name="all_apps_title">Apps</string>
+    <string name="back_to_clock">Back to clock</string>
+    <!-- Control Center panel (SettingsOverlay), ported from the itsmevizz/cleanyourtv clean-tv-launcher fork (MIT). -->
+    <string name="panel_bt_battery">%1$d%%</string>
+    <string name="panel_bt_connected">Connected</string>
+    <string name="panel_footer">%1$s · Android %2$s</string>
+    <string name="panel_free_short">%1$s free</string>
+    <string name="panel_link">Link %1$d Mbps · %2$d dBm</string>
+    <string name="panel_link_unknown">Link speed unavailable</string>
+    <string name="panel_memory_short">Memory</string>
+    <string name="panel_no_traffic">Usage not available on this network</string>
+    <string name="panel_offline">Not connected</string>
+    <string name="panel_signal_dbm">%1$d dBm</string>
+    <string name="panel_signal_excellent">Excellent signal</string>
+    <string name="panel_signal_fair">Fair signal</string>
+    <string name="panel_signal_good">Good signal</string>
+    <string name="panel_signal_weak">Weak signal</string>
+    <string name="panel_speed_down">↓ %1$s/s</string>
+    <string name="panel_speed_up">↑ %1$s/s</string>
+    <string name="panel_storage_short">Storage</string>
+    <string name="panel_tile_accessibility">Accessibility</string>
+    <string name="panel_tile_all">All settings</string>
+    <string name="panel_tile_apps">Apps</string>
+    <string name="panel_tile_display">Display</string>
+    <string name="panel_tile_sound">Sound</string>
+    <string name="panel_usage_today">Today ↓ %1$s  ↑ %2$s</string>
+    <string name="side_network">Network &amp; Internet</string>
+    <string name="panel_bluetooth">Bluetooth</string>
+    <string name="panel_no_notifications">No notifications</string>
+    <string name="panel_notifications">Notifications</string>
+    <string name="notifications_name">Notification access</string>
 </resources>

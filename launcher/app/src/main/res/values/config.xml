@@ -17,9 +17,10 @@
 
     <!-- Apps pinned to the dock row at the bottom, in this order. Missing apps are skipped. -->
     <string-array name="dock_apps">
+        <item>com.google.android.youtube.tv</item>
+        <item>com.crunchyroll.crunchyroid</item>
         <item>com.netflix.ninja</item>
         <item>com.amazon.amazonvideo.livingroom</item>
-        <item>com.google.android.youtube.tv</item>
         <item>in.startv.hotstar</item>
     </string-array>
     <!-- With fewer dock_apps than columns (or a dock app that is not installed), the free dock slots take
@@ -29,12 +30,12 @@
 
     <!-- Apps never shown as tiles (e.g. the Live TV app, which the Inputs menu already covers). -->
     <string-array name="hidden_apps">
-        <item>com.mediatek.wwtv.tvcenter</item>
-        <item>com.mitv.gallery</item>
+        <item>com.tcl.tv</item>
+        <item>com.tcl.suspension</item>
     </string-array>
 
     <!-- The TV's Live TV / tuner app, offered at the end of the Inputs menu. Leave empty to omit. -->
-    <string name="live_tv_package" translatable="false">com.mediatek.wwtv.tvcenter</string>
+    <string name="live_tv_package" translatable="false">com.tcl.tv</string>
 
     <!-- Open the Live TV app above the first time Home comes up after the TV is switched on, for sets that are
          mostly used for broadcast TV. Once per boot: Home after that stays Home. Can also be set with
@@ -321,7 +322,7 @@
 
     <!-- Tiles per row in the grid; the dock always has this many slots. Tiles are 180dp wide at 4 columns and
          shrink to fit from 5 up (about 144dp at 5, 117dp at 6 on a 1080p TV). -->
-    <integer name="columns">4</integer>
+    <integer name="columns">6</integer>
 
     <!-- Basic motion is on; advanced effects are opt-in in the launcher's own Settings screen. -->
     <bool name="animations">true</bool>
@@ -436,4 +437,38 @@
          faint outer glow), rim (the crisp rim alone, no sheen, fill or glow, for a quiet focus over a wallpaper) or
          halo (the rim with a lighter outer glow). Can also be set with "glass_style": "rim" in a theme's config.json. -->
     <string name="glass_style" translatable="false">glass</string>
+    <!-- Landscape behind Home (LandscapeScene): "landscape" follows the time of day (real sunrise and sunset at the
+         weather location) and the current weather; "night" keeps the night picture all day; empty keeps the plain
+         background. Drawn once a minute into one small bitmap, never animated. A theme can set "scene". -->
+    <string name="scene" translatable="false"></string>
+    <!-- Clock text size in sp; 0 keeps the built-in size. A theme can set "clock_size". -->
+    <integer name="clock_size">0</integer>
+    <!-- "large": the date on its own line under the clock in sentence case ("Sunday, 25 October"), with the
+         weather and forecast lines under it. Empty keeps the header as it was. A theme can set "clock_style". -->
+    <string name="clock_style" translatable="false"></string>
+    <!-- Weather from Open-Meteo (no key, no account): the line under the date, the forecast and the scene's sky.
+         Only the latitude and longitude are sent, every 30 minutes while Home is on screen. Both empty switches
+         it off. weather_city is just the label. weather_unit: c or f. A theme can set all four. -->
+    <string name="weather_city" translatable="false"></string>
+    <string name="weather_latitude" translatable="false"></string>
+    <string name="weather_longitude" translatable="false"></string>
+    <string name="weather_unit" translatable="false">c</string>
+    <!-- The two forecast lines (next hours, next days) under the weather line. A theme can set "weather_forecast". -->
+    <bool name="weather_forecast">true</bool>
+    <!-- Extra rows at the end of the Inputs menu for things that are not TV inputs but live next to them, such as a
+         TV's AirPlay or screen-mirroring page: "Label=package/activity" opens that activity, "Label=package#action"
+         sends that action to the package. A row whose target is not installed or disabled is left out. A theme can
+         set "input_extra" as a list of the same strings. -->
+    <!-- The remote's Settings button opens the Control Center panel over any app (SettingsOverlay, drawn by
+         HomeKeyService, so HOME_KEY_SERVICE must be on): time, Wi-Fi with a live speed chart and today's data,
+         connected Bluetooth devices with battery, storage and memory, settings tiles and notifications. It samples
+         only while open. Pressing the button again or Back closes it. A theme can set "control_center". -->
+    <bool name="control_center">false</bool>
+    <!-- Home shows only the dock apps; Down from the dock opens the All apps page (AllAppsActivity) with every app
+         in a glass panel over the scene. A theme can set "home_dock_only". -->
+    <bool name="home_dock_only">false</bool>
+    <!-- Gap under the dock in dp; -1 keeps the built-in 30. A theme can set "dock_bottom_dp". -->
+    <integer name="dock_bottom_dp">-1</integer>
+    <string-array name="input_extra" translatable="false">
+    </string-array>
 </resources>

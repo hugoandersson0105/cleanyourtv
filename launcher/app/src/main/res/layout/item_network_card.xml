@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- The Wi-Fi card: an area chart of the network speed fills the card behind the text. OK opens Wi-Fi settings. -->
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="110dp"
+    android:layout_marginBottom="10dp"
+    android:background="@drawable/control_tile_bg"
+    android:clipToOutline="true"
+    android:focusable="true"
+    android:clickable="true">
+
+    <com.gathin.tvhome.NetworkGraphView
+        android:id="@+id/graph"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:padding="12dp">
+
+        <TextView
+            android:id="@+id/netTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/arimo_medium"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="#F2FFFFFF"
+            android:textSize="13sp" />
+
+        <TextView
+            android:id="@+id/netSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/arimo_regular"
+            android:singleLine="true"
+            android:ellipsize="end"
+            android:textColor="#8CFFFFFF"
+            android:textSize="10sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/speedDown"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/arimo_medium"
+                android:singleLine="true"
+                android:textColor="#7CC4FF"
+                android:textSize="11sp" />
+
+            <TextView
+                android:id="@+id/speedUp"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:fontFamily="@font/arimo_medium"
+                android:gravity="end"
+                android:singleLine="true"
+                android:textColor="#FFB86B"
+                android:textSize="11sp" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/usageText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="3dp"
+            android:fontFamily="@font/arimo_regular"
+            android:singleLine="true"
+            android:textColor="#B3FFFFFF"
+            android:textSize="10sp" />
+
+        <TextView
+            android:id="@+id/linkText"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:fontFamily="@font/arimo_regular"
+            android:singleLine="true"
+            android:textColor="#8CFFFFFF"
+            android:textSize="10sp" />
+    </LinearLayout>
+</FrameLayout>

@@ -8,6 +8,12 @@
     <uses-feature android:name="android.hardware.location.gps" android:required="false" />
 
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
+    <!-- Open-Meteo, only when a weather location is set (WeatherLine). -->
+    <uses-permission android:name="android.permission.INTERNET" />
+    <!-- Control Center: connected Bluetooth devices and the remote's battery. Granted at install with
+         pm grant ... BLUETOOTH_CONNECT. -->
+    <uses-permission android:name="android.permission.BLUETOOTH" android:maxSdkVersion="30" />
+    <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
     <uses-permission android:name="android.permission.ACCESS_WIFI_STATE" />
     <!-- Needed since Android 10 to read the Wi-Fi network name for the network pill. Never requested at
          runtime: build-and-install grants it with pm grant, so lint's Android 12 "ask for COARSE with
@@ -65,6 +71,9 @@
         <package android:name="com.xiaomi.mitv.settings" />
         <package android:name="com.tcl.settings" />
         <package android:name="com.amazon.tv.launcher" />
+        <!-- input_extra rows on TCL sets: the AirPlay page and the screen-mirroring receiver. -->
+        <package android:name="com.amlogic.airplay" />
+        <package android:name="com.tcl.miracast" />
         <!-- Coocaa OS sources for the Inputs menu (coocaa_sources); see CoocaaSources. -->
         <provider android:authorities="com.skyworth.tv.provider" />
         <provider android:authorities="com.skyworth.tv.sdk.provider" />
@@ -78,6 +87,21 @@
         android:allowBackup="false"
         android:localeConfig="@xml/locales_config">
 
+        <!-- The TV's notifications for the Control Center panel. Allowed at install: cmd notification allow_listener. -->
+        <service
+            android:name=".NotificationService"
+            android:label="@string/notifications_name"
+            android:exported="true"
+            android:permission="android.permission.BIND_NOTIFICATION_LISTENER_SERVICE">
+            <intent-filter>
+                <action android:name="android.service.notification.NotificationListenerService" />
+            </intent-filter>
+        </service>
+        <!-- All apps page (home_dock_only): every app in a glass panel over the scene; Down from the dock opens it. -->
+        <activity
+            android:name=".AllAppsActivity"
+            android:exported="false"
+            android:theme="@style/Theme.TvHome" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

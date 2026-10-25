@@ -4,6 +4,11 @@
         <item name="android:windowBackground">@android:color/black</item>
         <item name="android:colorBackground">@android:color/black</item>
         <item name="android:windowAnimationStyle">@null</item>
+        <!-- Explicitly opaque: on some firmware a theme can come out translucent and the TV app keeps running
+             (and showing) under Home. -->
+        <item name="android:windowIsTranslucent">false</item>
+        <item name="android:windowIsFloating">false</item>
+        <item name="android:windowSwipeToDismiss">false</item>
     </style>
 
     <!-- Frosted pill, tvOS style. -->
