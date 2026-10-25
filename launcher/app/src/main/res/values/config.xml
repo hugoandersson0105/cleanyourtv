@@ -436,4 +436,8 @@
          faint outer glow), rim (the crisp rim alone, no sheen, fill or glow, for a quiet focus over a wallpaper) or
          halo (the rim with a lighter outer glow). Can also be set with "glass_style": "rim" in a theme's config.json. -->
     <string name="glass_style" translatable="false">glass</string>
+
+    <!-- Crash watchdog: after three crashes in five minutes the next start skips config.json and the wallpaper
+         (safe mode, docs/WATCHDOG.md). Off by default: with it off no crash handler is installed and nothing is read. -->
+    <bool name="crash_watchdog">false</bool>
 </resources>
