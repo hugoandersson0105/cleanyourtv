@@ -375,6 +375,21 @@ Things that bit us or contributors, so they don't bite you. Commands use `tools/
   launcherx is enabled it takes Home back (`set-home-activity` prints `Success` and changes nothing, and
   its home activity can't be disabled from the shell). To switch profile: `pm enable --user 0
   com.google.android.apps.tv.launcherx`, switch in Settings, then disable it again and set Home last.
+- **Settings > Privacy > Usage & diagnostics opens nothing after the debloat** on Google TV, seen on a
+  Hisense 50A6H4 (`songshan`, Android 11, `RTT2.220118.001`, the third unit in
+  [its list](../examples/hisense-smarttv-4k-ffm-android11/debloat.txt)). The page is not part of TV
+  Settings: its Privacy screen shows the entry as a slice from
+  `content://com.google.android.settings.usage/usagediagnostics`, with the intent
+  `com.google.android.settings.USAGE_AND_DIAGNOSTICS_SETTING` behind it, and on a Chromecast with Google
+  TV 4K (`sabrina`, Google TV 14, `UTTC.250917.004`) setupwraith is the only app that answers either: it
+  holds the provider for that authority and
+  `com.google.android.settings.usage.UsageDiagnosticsSettingActivity`. A list that disables setupwraith
+  takes the switch with it, so set it before the list runs. To see which app has the page on another TV,
+  while setupwraith is still enabled:
+  `tools/tv.py 'cmd package query-activities --brief -a com.google.android.settings.USAGE_AND_DIAGNOSTICS_SETTING'`.
+  Not checked yet: whether the reporting stops once setupwraith is disabled, and whether enabling it again
+  brings the page back. While it is enabled it can take Home again, and disabling it a second time needs
+  the same Wi-Fi check (the setupwraith entries above).
 - **Voice search for a song or video says "Google Assistant is having trouble processing your request"**
   once launcherx is disabled, while app commands ("open YouTube") still work. Seen on an onn 4K Streaming
   Box (`YOC`, Google TV 14, `URO4.260304.011.B1.15051976`). Google TV shows those results in its own home
